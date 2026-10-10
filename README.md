@@ -85,10 +85,25 @@ Supported Markdown: headings with labels, links and wikilinks, images with capti
 
 If Markdown cannot say what you need, a fenced block marked ` ```{=typst} ` is copied as Typst code. This is the only escape hatch.
 
-## Usage
+## Installation
 
-> [!NOTE]
-> This is the planned interface. The CLI is not implemented yet (see [Status](#status)).
+You need Rust (stable) and `make`. On Linux:
+
+```bash
+make install
+```
+
+This command installs three items:
+
+- the binary in `~/.local/bin/combava`
+- the global configuration in `~/.config/combava/config.toml`. All keys are in the file. The keys that do not have a default are commented out.
+- the default template in `~/.config/combava/templates/default/`. This copy replaces the template in the binary. Put your logos in its `images/` folder, with the same file names.
+
+`make install` does not overwrite a configuration or a template that you installed before. To replace them, use `make install FORCE=1`. To remove the binary, use `make uninstall`.
+
+The first document with math downloads a Typst package, so you need a network connection one time.
+
+## Usage
 
 ```bash
 combava init report.md      # create a document with a starter header
@@ -108,8 +123,8 @@ Combava is under heavy development.
 
 - [x] **`combava-core`**: the Markdown to Typst transpiler, with diagnostics and a line map. It has 80 tests: snapshots, diagnostics, API contract, and robustness on random input.
 - [x] **Specification and architecture**: [`docs/specification.md`](docs/specification.md) and [`docs/architecture.md`](docs/architecture.md)
-- [ ] **`combava-cli`**: header parsing, configuration layers, Typst compilation, PDF export
-- [ ] **Default template**: cover page, tables, callouts, bibliography style
+- [x] **`combava-cli`**: header parsing, configuration layers, Typst compilation, PDF export
+- [x] **Default template**: cover page, tables, callouts, bibliography style
 - [ ] First release
 
 Out of scope for v1: a `watch` mode, free variables for templates, subscript and superscript, automatic French spacing, remote images, HTML, multi-file documents, and PDF/A.
@@ -121,6 +136,7 @@ crates/combava-core/   Markdown → Typst transpiler (library, no I/O)
 crates/combava-cli/    the `combava` binary
 templates/default/     the default template, embedded in the binary
 examples/              reference documents
+config/config.toml     the global configuration that `make install` installs
 docs/                  specification and architecture
 assets/                banner and logo
 ```
