@@ -284,3 +284,42 @@ fn config_transmise_au_core() {
         );
     }
 }
+
+/// La configuration globale installée par `make install`.
+fn configuration_installee() -> String {
+    std::fs::read_to_string(common::workspace().join("config/config.toml")).unwrap()
+}
+
+#[test]
+fn configuration_installee_vaut_les_defauts() {
+    let fixture = Fixture::new();
+    fixture.write("globale/config.toml", &configuration_installee());
+    let settings = fixture.load("# Titre\n");
+    assert_eq!(settings.config, combava_core::Config::default());
+    assert!(matches!(settings.template, Template::Embedded { ref name, .. } if name == "default"));
+}
+
+#[test]
+fn configuration_installee_toutes_cles_decommentees() {
+    // Chaque clé commentée a une valeur valide une fois décommentée.
+    let fixture = Fixture::new();
+    fixture.write("maison/references.bib", "");
+    let config: String = configuration_installee()
+        .lines()
+        .map(|line| {
+            let key = line.strip_prefix("# ").unwrap_or(line);
+            let is_key = key
+                .split_once(" = ")
+                .is_some_and(|(name, _)| name.chars().all(|c| c.is_ascii_lowercase() || c == '_'));
+            format!("{}\n", if is_key { key } else { line })
+        })
+        .collect();
+    fixture.write("globale/config.toml", &config);
+    let settings = fixture.load("# Titre\n");
+    assert_eq!(settings.config.title.as_deref(), Some("Titre du rapport"));
+    assert_eq!(settings.config.subject.as_deref(), Some("Matière"));
+    assert_eq!(
+        settings.bibliography,
+        Some(fixture.path("maison/references.bib"))
+    );
+}
