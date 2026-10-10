@@ -61,7 +61,7 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
         - `build.rs` : recompile le binaire quand un template embarqué change
         - `tests/`
             - `cli_build.rs`, `cli_init.rs` : bout en bout, un test par code de diagnostic
-            - `config_layers.rs` : fusion des couches et chemins relatifs
+            - `config_layers.rs` : fusion des couches et chemins relatifs, validité de `config/config.toml`
             - `template_resolution.rs` : ordre de recherche, remplacement de `default`
             - `core_fixtures.rs` : le Typst de chaque fixture du core se compile avec le template de test et avec le template par défaut
             - `fixtures/templates/minimal/` : template de test conforme au contrat
@@ -72,6 +72,10 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
         - `utils.typ`, `theme.typ` : étiquettes et logos ; couleurs, polices et mesures
         - `images/` : `univ_logo.png` et `school_logo.png`, de fausses images à remplacer par les vrais logos
     - `examples/` : documents d'exemple
+    - `config/config.toml` : configuration globale installée par `make install`, toutes les clés commentées sauf les défauts
+    - `Makefile` : `make install` pour l'utilisateur courant
+        - binaire dans `~/.local/bin`
+        - `config/config.toml` et `templates/default/` dans le dossier de configuration globale, sans écraser une version déjà installée (`FORCE=1` pour la remplacer)
 
 ## combava-core
 
