@@ -63,9 +63,14 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
             - `cli_build.rs`, `cli_init.rs` : bout en bout, un test par code de diagnostic
             - `config_layers.rs` : fusion des couches et chemins relatifs
             - `template_resolution.rs` : ordre de recherche, remplacement de `default`
-            - `core_fixtures.rs` : le Typst de chaque fixture du core se compile avec un template conforme
+            - `core_fixtures.rs` : le Typst de chaque fixture du core se compile avec le template de test et avec le template par défaut
             - `fixtures/templates/minimal/` : template de test conforme au contrat
     - `templates/default/` : le template par défaut, embarqué dans le binaire (`include_dir`)
+        - `template.typ` : point d'entrée, `template` et `callout`
+        - `couverture.typ` : page de couverture
+        - `composants.typ` : encadré des callouts
+        - `utils.typ`, `theme.typ` : étiquettes et logos ; couleurs, polices et mesures
+        - `images/` : `univ_logo.png` et `school_logo.png`, de fausses images à remplacer par les vrais logos
     - `examples/` : documents d'exemple
 
 ## combava-core
@@ -240,7 +245,7 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
     - bout en bout (`assert_cmd`, `tempfile`) : `build` produit un PDF, `init` refuse d'écraser, chaque code de diagnostic
         - sous Linux, `XDG_CONFIG_HOME` pointe vers un dossier temporaire : la configuration globale de la machine n'influe pas sur les tests
         - `package-download` est simulé sans réseau : caches de packages vides et proxy injoignable
-    - les tests qui demandent le template par défaut sont ignorés tant que le lot template n'est pas livré
+    - template par défaut : `examples/report.md`, un document sans aucun champ, des titres dans des conteneurs (citation, liste, callout, note)
 
 ## Dépendances
 
