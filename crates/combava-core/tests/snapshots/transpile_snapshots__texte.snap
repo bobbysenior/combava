@@ -1,0 +1,38 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (texte))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Caractères spéciaux : \# \$ \* \_ \@ \< \> \[ \] \` \~ \/ \= \- \+ et \\ fin.
+
+Une adresse a\@b.fr, une URL https:\/\/exemple.fr, l'année 2026\. et π \= 3\.14\.
+
+Les "guillemets" et l'apostrophe restent tels quels.
+
+#emph[Emphase], #strong[gras], #strike[barré] et #raw("code en ligne");.
+
+Suivis de #emph[parenthèses];(ici), de #strong[crochets]\[là\] et d'un #emph[point];.
+
+Ligne une ligne deux,#linebreak()puis un retour forcé.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---

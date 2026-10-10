@@ -1,0 +1,14 @@
+[package]
+name = "combava-core"
+description = "Transpilation markdown → Typst de Combava"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+pulldown-cmark = { version = "0.13.4", default-features = false }
+thiserror = "2.0.21"
+
+[dev-dependencies]
+insta = "1.49.0"

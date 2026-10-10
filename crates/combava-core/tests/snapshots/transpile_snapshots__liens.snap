@@ -1,0 +1,34 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (liens))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+#heading(level: 1)[Cible]#label("cible")
+
+Lien #link("https://typst.app")[externe], autolien #link("https://exemple.fr")[https:\/\/exemple.fr] et courriel #link("mailto:moi@exemple.fr")[moi\@exemple.fr];.
+
+Lien #link(label("cible"))[interne], wikilinks #link(label("cible"))[Cible] et #link(label("cible"))[avec texte];.
+
+Lien #link("annexe%20A.pdf")[vers un fichier] et lien vide.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---

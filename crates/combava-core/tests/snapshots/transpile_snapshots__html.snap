@@ -1,0 +1,31 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (html))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Texte avec HTML en ligne et  caché.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---
+1:1: Warning[raw-html] : HTML brut ignoré
+5:12: Warning[raw-html] : HTML brut ignoré
+5:19: Warning[raw-html] : HTML brut ignoré

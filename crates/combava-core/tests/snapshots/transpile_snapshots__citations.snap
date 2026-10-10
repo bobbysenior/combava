@@ -1,0 +1,30 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (citations))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Comme le montre Knuth #cite(label("knuth1984")), et d'autres #cite(label("doe2020"))#cite(label("smith:2021"));.
+
+Une adresse a\@b.fr n'est pas une citation, ni \[\@ incomplet\] ni \[\@a b\].
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---
