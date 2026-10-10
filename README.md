@@ -117,6 +117,8 @@ Settings come from four layers. The first layer that sets a key wins:
 3. `.combava/config.toml` in the project
 4. `config.toml` in the global configuration directory
 
+The [user guide](docs/guide.md) (in French) explains the header keys, the supported Markdown, the templates, and each error message.
+
 ## Status
 
 Combava is under heavy development.
@@ -137,7 +139,7 @@ crates/combava-cli/    the `combava` binary
 templates/default/     the default template, embedded in the binary
 examples/              reference documents
 config/config.toml     the global configuration that `make install` installs
-docs/                  specification and architecture
+docs/                  user guide, specification, and architecture
 assets/                banner and logo
 ```
 
@@ -147,7 +149,7 @@ assets/                banner and logo
 cargo test -p combava-core
 ```
 
-The specification and the architecture notes are written in French. The specification wins if the two documents disagree.
+The user guide, the specification, and the architecture notes are written in French. The specification wins if the two documents disagree.
 
 Commit messages follow Conventional Commits, written in French, with a space before the colon: `feat(core) : transpiler le markdown en Typst`.
 
