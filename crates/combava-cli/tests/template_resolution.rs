@@ -57,6 +57,7 @@ fn template_embarque_par_defaut() {
     let dirs = Dirs::new();
     let template = dirs.resolve("default").unwrap();
     assert!(matches!(template, Template::Embedded { ref name, .. } if name == "default"));
+    assert_eq!(template.name(), "default");
     assert!(template.read("template.typ").is_some());
     assert!(template.read("absent.typ").is_none());
     assert_eq!(
@@ -71,6 +72,7 @@ fn template_embarque_par_defaut() {
 fn ordre_de_recherche() {
     let dirs = Dirs::new();
     let global = dirs.template("globale/templates/maison");
+    assert_eq!(dirs.resolve("maison").unwrap().name(), "maison");
     assert_eq!(disk(dirs.resolve("maison").unwrap()), global);
     let project = dirs.template("projet/.combava/templates/maison");
     assert_eq!(disk(dirs.resolve("maison").unwrap()), project);

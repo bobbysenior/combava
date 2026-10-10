@@ -111,21 +111,74 @@ fn erreur_typst_ramenee_dans_le_markdown() {
         stderr.starts_with("r.md:5:1: erreur[typst] : unknown variable: inconnue"),
         "{stderr}"
     );
+    // L'erreur vient du document, pas du template.
+    assert!(!stderr.contains("contrat"), "{stderr}");
     assert_eq!(sandbox.read("r.pdf"), "ancien PDF");
 }
 
+/// L'indication ajoutée aux erreurs du préambule pour le template `nom`.
+fn template_hint(name: &str) -> String {
+    format!(
+        "  aide : le template « {name} » doit définir « template » et « callout », \
+         et accepter tous les arguments du contrat (spécification, section 9)\n"
+    )
+}
+
 #[test]
-fn erreur_typst_dans_le_code_genere() {
-    // Un template qui n'exporte pas `callout` : l'import du préambule échoue.
+fn template_vide() {
+    // Typst signale un `unresolved import` par nom importé, à deux colonnes de
+    // la même ligne du préambule : un seul diagnostic est affiché.
     let sandbox = Sandbox::new();
-    sandbox.write("t/template.typ", "#let template(..args, body) = body\n");
+    sandbox.write("t/template.typ", "");
+    sandbox.write("r.md", DOC);
+    let (code, stderr) = sandbox.run(&["build", "r.md", "-t", "./t"]);
+    assert_eq!(code, 1);
+    assert_eq!(
+        stderr,
+        format!(
+            "r.md: erreur[typst] : unresolved import (ligne 2 du code généré, voir --transpile-only)\n{}",
+            template_hint("t")
+        )
+    );
+}
+
+#[test]
+fn template_sans_callout() {
+    let sandbox = Sandbox::new();
+    sandbox.write(
+        ".combava/templates/maison/template.typ",
+        "#let template(..args, body) = body\n",
+    );
+    sandbox.write("r.md", DOC);
+    let (code, stderr) = sandbox.run(&["build", "r.md", "-t", "maison"]);
+    assert_eq!(code, 1);
+    assert_eq!(
+        stderr,
+        format!(
+            "r.md: erreur[typst] : unresolved import (ligne 2 du code généré, voir --transpile-only)\n{}",
+            template_hint("maison")
+        )
+    );
+}
+
+#[test]
+fn template_sans_un_argument_du_contrat() {
+    let sandbox = Sandbox::new();
+    let minimal = std::fs::read_to_string(minimal_template().join("template.typ")).unwrap();
+    let without_cohort = minimal
+        .replace("  cohort: none,\n", "")
+        .replace("cohort, ", "");
+    assert_ne!(without_cohort, minimal);
+    sandbox.write("t/template.typ", without_cohort);
     sandbox.write("r.md", DOC);
     let (code, stderr) = sandbox.run(&["build", "r.md", "-t", "./t"]);
     assert_eq!(code, 1);
     assert!(
-        stderr.starts_with("r.md: erreur[typst] : unresolved import (ligne 2 du code généré, voir --transpile-only)"),
+        stderr.starts_with("r.md: erreur[typst] : unexpected argument: cohort (ligne "),
         "{stderr}"
     );
+    assert!(stderr.ends_with(&template_hint("t")), "{stderr}");
+    assert_eq!(stderr.lines().count(), 2, "{stderr}");
 }
 
 #[test]

@@ -43,6 +43,19 @@ impl Template {
         }
     }
 
+    /// Nom affiché dans les messages : celui du template embarqué, ou celui
+    /// de son dossier.
+    pub fn name(&self) -> String {
+        match self {
+            Self::Disk(dir) => dir
+                .file_name()
+                .unwrap_or(dir.as_os_str())
+                .to_string_lossy()
+                .into_owned(),
+            Self::Embedded { name, .. } => name.clone(),
+        }
+    }
+
     /// Chemin affiché dans les diagnostics pour le fichier `relative` : le
     /// chemin réel, ou `<nom>/…` pour un template embarqué.
     pub fn display_path(&self, relative: &str) -> PathBuf {

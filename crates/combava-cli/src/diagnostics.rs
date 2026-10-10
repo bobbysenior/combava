@@ -141,6 +141,18 @@ pub fn position(text: &str, offset: usize) -> (usize, usize) {
     (line, column)
 }
 
+/// Retire les diagnostics identiques à un diagnostic précédent, sans changer
+/// l'ordre des autres.
+pub fn dedup(diagnostics: &mut Vec<Diagnostic>) {
+    let mut kept: Vec<Diagnostic> = Vec::with_capacity(diagnostics.len());
+    for diagnostic in diagnostics.drain(..) {
+        if !kept.contains(&diagnostic) {
+            kept.push(diagnostic);
+        }
+    }
+    *diagnostics = kept;
+}
+
 /// Affiche les diagnostics sur la sortie d'erreur, au fur et à mesure.
 pub struct Reporter {
     cwd: PathBuf,
@@ -207,6 +219,22 @@ mod tests {
         assert_eq!(position(text, 1000), (4, 2));
         // Au milieu de « é » : ramené au début du caractère.
         assert_eq!(position(text, 5), (2, 2));
+    }
+
+    #[test]
+    fn doublons() {
+        let a = Diagnostic::error(Code::Typst, "a");
+        let b = Diagnostic::error(Code::Typst, "b");
+        let a_ailleurs = a.clone().at(Location::File("x.md".into()));
+        let mut diagnostics = vec![
+            a.clone(),
+            b.clone(),
+            a.clone(),
+            a_ailleurs.clone(),
+            b.clone(),
+        ];
+        dedup(&mut diagnostics);
+        assert_eq!(diagnostics, [a, b, a_ailleurs]);
     }
 
     #[test]
