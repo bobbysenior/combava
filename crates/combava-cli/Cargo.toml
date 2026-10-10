@@ -1,0 +1,14 @@
+[package]
+name = "combava-cli"
+description = "Générateur de PDF à partir de markdown, opinioné, basé sur Typst"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "combava"
+path = "src/main.rs"
+
+[dependencies]
+combava-core = { path = "../combava-core" }
