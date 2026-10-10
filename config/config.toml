@@ -1,0 +1,50 @@
+# Configuration globale de combava, installée par `make install` dans
+# ~/.config/combava/config.toml.
+#
+# Elle s'applique à tous les documents. Le frontmatter d'un document et le
+# fichier .combava/config.toml d'un projet l'emportent sur elle, clé par clé
+# (spécification, section 6).
+#
+# Les clés actives valent leur défaut. Pour régler une clé commentée, retirer
+# le « # » en tête de ligne.
+
+# --- Couverture ---------------------------------------------------------------
+
+# title = "Titre du rapport"
+# subtitle = "Sous-titre"
+# authors = ["Prénom Nom"]
+# teachers = ["Prénom Nom"]
+# date = "1er janvier 2026"
+
+# Le template par défaut affiche le logo de l'école et celui de l'université
+# quand ces clés sont définies.
+# school = "École"
+# university = "Université"
+# academic_year = "2026-2027"
+# cohort = "Promotion 2028"
+# specialization = "Informatique"
+# subject = "Matière"
+
+# --- Tables -------------------------------------------------------------------
+
+toc = true
+list_of_figures = false
+list_of_listings = false
+
+# --- Mise en page -------------------------------------------------------------
+
+# Texte en haut de page (par défaut : le titre).
+# header_text = "Texte en haut de page"
+
+# Nom d'un template, ou chemin vers son dossier. « default » désigne
+# templates/default/ à côté de ce fichier, ou celui du binaire s'il n'existe
+# pas.
+template = "default"
+
+# --- Bibliographie ------------------------------------------------------------
+
+# Fichier .bib. Un chemin relatif l'est au dossier de ce fichier ; « ~ »
+# désigne le dossier personnel.
+# bibliography = "~/references.bib"
+
+# La clé `output` n'est acceptée que dans le frontmatter d'un document.
