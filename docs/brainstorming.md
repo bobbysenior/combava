@@ -140,7 +140,7 @@ combava config edit                         # ouvre dans $EDITOR
 
 ## 7. Estimation du transpileur maison
 
-Hypothèse : Rust, avec `comrak`, `serde`, `clap` et la crate `typst` (ou `typst-as-lib`). Ce sont des ordres de grandeur, pas des mesures.
+Hypothèse : Rust, avec `pulldown-cmark`, `serde`, `clap` et la crate `typst` (ou `typst-as-lib`). Ce sont des ordres de grandeur, pas des mesures.
 
 | Brique | Lignes de Rust |
 |---|---|

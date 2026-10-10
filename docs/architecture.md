@@ -23,7 +23,7 @@ Si un aperçu WASM devient nécessaire, le crate pourra être scindé en workspa
  document      sépare le frontmatter du corps, valide le schéma du type de document
      │
      ▼
- markdown      parse le corps (comrak) puis l'abaisse vers l'IR
+ markdown      parse le corps (pulldown-cmark) puis l'abaisse vers l'IR
      │
      ▼
  ir            modèle de document propre à Combava, chaque nœud porte son Span
@@ -48,11 +48,14 @@ Si un aperçu WASM devient nécessaire, le crate pourra être scindé en workspa
 
 ## 3. Principes directeurs
 
-**Une représentation intermédiaire (IR) entre comrak et Typst.**
-Le markdown est converti dès l'entrée en types propres à Combava (`Block`, `Inline`), qui portent chacun un `Span` (position dans le fichier source). Tout ce qui suit travaille sur l'IR, jamais sur l'AST de comrak. Conséquences :
+**Une représentation intermédiaire (IR) entre pulldown-cmark et Typst.**
+Le markdown est converti dès l'entrée en types propres à Combava (`Block`, `Inline`), qui portent chacun un `Span` (position dans le fichier source). Tout ce qui suit travaille sur l'IR, jamais sur les événements de pulldown-cmark. Conséquences :
 - on peut changer de parseur markdown sans toucher au reste ;
 - les erreurs peuvent pointer la ligne du markdown source, à n'importe quelle étape ;
 - les règles de lint et la typographie se testent sur des structures construites à la main.
+
+**Le frontmatter est traité par Combava, pas par le parseur markdown.**
+pulldown-cmark sait reconnaître un bloc de métadonnées, mais il n'en donne que le texte brut. `document/` découpe donc lui-même le frontmatter avant le parsing et ne transmet à `markdown/` que le corps, avec son décalage en octets dans le fichier. Ce décalage est ajouté aux positions renvoyées par pulldown-cmark pour que les `Span` désignent toujours le fichier source complet.
 
 **Le seul couplage avec le design est le contrat du thème.**
 `transpile/` émet des appels à des fonctions sémantiques (`#callout(...)`, `#section(...)`) dont il ne connaît que le nom et la signature. Le thème fournit ces fonctions. Changer l'esthétique ne demande aucune modification du code Rust (voir la section 6).
@@ -98,14 +101,14 @@ Configuration de l'outil, à plusieurs niveaux (voir la section 6 de [brainstorm
 
 ### `document/`
 Tout ce qui concerne les métadonnées du document.
-- `frontmatter.rs` : sépare le frontmatter du corps et le désérialise.
+- `split.rs` : repère les délimiteurs du frontmatter et sépare le bloc de métadonnées du corps. Retourne le décalage en octets du corps, nécessaire au calcul des `Span`.
+- `frontmatter.rs` : désérialise le bloc de métadonnées et rattache chaque erreur à sa position dans le fichier.
 - `doc_type.rs` : l'énumération des types (`report`, `memo`…).
 - `schema.rs` : champs obligatoires et facultatifs par type. Refuse de continuer si `title` ou `author` manque.
 
 ### `markdown/`
-- `parser.rs` : appelle comrak avec les extensions voulues (GFM, notes de bas de page).
-- `lower.rs` : parcourt l'AST de comrak et construit l'IR en calculant les `Span`.
-- `callout.rs` : reconnaît les callouts GFM (`> [!NOTE]`) et les transforme en nœud dédié de l'IR.
+- `parser.rs` : configure pulldown-cmark avec les extensions voulues (`ENABLE_TABLES`, `ENABLE_FOOTNOTES`, `ENABLE_STRIKETHROUGH`, `ENABLE_GFM`) et produit le flux d'événements avec leurs positions (`into_offset_iter`). Les métadonnées YAML de pulldown-cmark restent désactivées : le frontmatter est déjà retiré par `document/`.
+- `lower.rs` : consomme le flux d'événements (`Start`/`End`) et reconstruit l'arbre de l'IR à l'aide d'une pile. Convertit les plages d'octets en `Span` en tenant compte du décalage du corps. Les callouts GFM (`> [!NOTE]`) arrivent déjà typés (`BlockQuoteKind`) et sont transformés ici en nœud dédié de l'IR.
 
 ### `ir/`
 Le modèle de document.
@@ -184,8 +187,8 @@ Les squelettes markdown de `combava init` sont dans `templates/` (`report.md`, `
 
 | Besoin | Crate |
 |---|---|
-| Parsing markdown | `comrak` |
-| Frontmatter YAML | à choisir : `serde_yaml` est archivé, comparer `serde_yml`, `serde_norway` ou `saphyr` |
+| Parsing markdown | `pulldown-cmark` |
+| Frontmatter | découpage maison (`document/split.rs`) ; désérialisation à choisir : `serde_yaml` est archivé, comparer `serde_yml`, `serde_norway` ou `saphyr` |
 | Sérialisation | `serde` |
 | Configuration | `toml`, `toml_edit`, `directories` |
 | CLI | `clap` |
