@@ -1,2 +1,26 @@
+# Rust
 /target
+**/*.rs.bk
+*.pdb
+
+# Snapshots insta en attente de validation
+*.snap.new
+*.pending-snap
+
+# Sorties de combava (PDF, et .typ de --transpile-only)
 *.pdf
+/examples/**/*.typ
+
+# Éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Systèmes
+.DS_Store
+Thumbs.db
+
+# Réglages locaux de Claude Code
+.claude/settings.local.json
