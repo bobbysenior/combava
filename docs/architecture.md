@@ -2,6 +2,8 @@
 
 Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passant par Typst. Combava est opinioné : un template convient tel quel à l'utilisateur, il n'expose pas de réglages libres.
 
+Le détail du comportement et de l'interface entre le core et le CLI est dans [specification.md](specification.md), qui fait foi en cas de désaccord.
+
 ```
  rapport.md ──► combava-cli ──► combava-core ──► combava-cli ──► rapport.pdf
                (config, IO)    (md → Typst)     (Typst → PDF)
@@ -16,7 +18,7 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
         - `src/`
             - `lib.rs` : fonction `transpile`
             - `config.rs` : la `struct Config`
-            - `output.rs` : `Output` et les avertissements
+            - `output.rs` : `Output` et les diagnostics
             - `error.rs` : le type d'erreur
             - `parser.rs` : options de pulldown-cmark
             - `escape.rs` : échappement du texte et sérialisation des valeurs en littéraux Typst
@@ -47,12 +49,12 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
 
 ## combava-core
 
-- point d'entrée : `transpile(markdown: &str, config: &Config) -> Result<Output, Error>`
-    - `markdown` : le corps du document, frontmatter déjà retiré par le CLI
+- point d'entrée : `transpile(markdown: &str, config: &Config) -> Result<Output, TranspileError>`
+    - `markdown` : le contenu du fichier, frontmatter remplacé par des espaces par le CLI
     - `config` : la configuration fusionnée par le CLI
     - `Output`
         - `typst` : le code Typst complet
-        - `warnings` : avertissements (élément ignoré, attribut inconnu…), chacun avec sa ligne dans le markdown
+        - `diagnostics` : avertissements (élément ignoré, attribut inconnu…), chacun avec sa position dans le markdown
         - `source_map` : correspondance ligne Typst → ligne markdown, pour traduire les erreurs de compilation
 
 - `Config` : une `struct`, pas un enum
@@ -85,7 +87,7 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
 
 - génération du code Typst
     - structure du fichier généré :
-        - `#import "@preview/mitex:<version épinglée>": mi, mitex` (seulement si le document contient des maths)
+        - `#import "@preview/mitex:0.2.7": mi, mitex` (seulement si le document contient des maths)
         - `#import "/__combava__/template/template.typ": template, callout`
         - `#show: template.with(title: "…", authors: ("…", "…"), toc: true, …)`
             - chaque valeur est sérialisée en littéral Typst échappé
@@ -121,8 +123,7 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
             - attention : une ligne `---` placée juste sous un paragraphe en fait un titre setext (H2) ; il faut une ligne vide avant
         - HTML brut → ignoré avec un avertissement ; les commentaires `<!-- … -->` sont ignorés sans avertissement
     - échappement du texte (module critique, très testé)
-        - caractères préfixés par `\` : `\ # $ * _ @ < > [ ] ` ~ /`
-        - en début de ligne : `=`, `-`, `+`
+        - caractères préfixés par `\` : `\ # $ * _ @ < > [ ] ` ~ / = - +`, et tout `.` précédé d'un chiffre
         - `"` et `'` restent tels quels : Typst les transforme en guillemets français
 
 ## combava-cli
@@ -130,8 +131,8 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
 - configuration
     - frontmatter
         - bloc TOML délimité par `+++`, en tout début de fichier
-        - le CLI le retire avant d'appeler le core et le remplace par autant de lignes vides
-            - pourquoi : les numéros de ligne des avertissements et des erreurs restent ceux du fichier
+        - le CLI remplace chacun de ses octets par une espace, sauf les `\n`, avant d'appeler le core
+            - pourquoi : les octets, lignes et colonnes des diagnostics restent ceux du fichier
     - couches, de la plus prioritaire à la moins prioritaire :
         1) arguments de la ligne de commande (`-o`, `-t`)
         2) frontmatter
@@ -147,13 +148,14 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
     - fusion champ par champ (`a.or(b)`) ; une liste (`authors`…) est remplacée, jamais concaténée
     - le résultat fusionné donne la `Config` du core et les clés propres au CLI
     - clés propres au CLI, en plus de celles de `Config` :
-        - `output` : fichier PDF (par défaut, même nom que le `.md` en `.pdf`, à côté du `.md`)
+        - `output` : fichier PDF, dans le frontmatter uniquement (par défaut, même nom que le `.md` en `.pdf`, à côté du `.md`)
         - `template` : nom ou chemin du template (par défaut `default`)
         - `bibliography` : chemin du fichier `.bib`
     - un chemin relatif est résolu par rapport au fichier qui le déclare :
         - frontmatter → dossier du `.md`
         - `.combava/config.toml` → racine du projet
-        - configuration globale → chemin absolu ou commençant par `~`
+        - configuration globale → dossier de configuration globale
+        - `~` en tête → dossier personnel, dans toutes les couches
 
 - résolution du template
     - un template est un dossier contenant `template.typ` (et ses ressources : images, polices…)
@@ -171,7 +173,7 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
         - `/__combava__/main.typ` → code généré, en mémoire
         - `/__combava__/template/` → dossier du template résolu
         - `/__combava__/bibliography.bib` → fichier `.bib` résolu
-    - polices : polices système, puis polices embarquées de `typst-kit`
+    - polices : dossier `fonts/` du template, puis polices système, puis polices embarquées de `typst-kit`
     - packages (`mitex`) : téléchargés au premier usage puis mis en cache par `typst-kit`
     - erreurs Typst
         - dans `main.typ` → ligne traduite vers le markdown grâce à `source_map`
@@ -198,7 +200,8 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
 ## Contrat du template
 
 - `template.typ` exporte :
-    - `template(title: none, subtitle: none, authors: (), teachers: (), date: none, school: none, university: none, academic_year: none, cohort: none, specialization: none, subject: none, toc: true, list_of_figures: false, list_of_listings: false, header_text: none, body)`
+    - `template(title: none, subtitle: none, authors: (), teachers: (), date: none, school: none, university: none, academic-year: none, cohort: none, specialization: none, subject: none, toc: true, list-of-figures: false, list-of-listings: false, header-text: none, body)`
+        - arguments en kebab-case (convention Typst), convertis par le core depuis les noms de `Config`
         - règle la langue (`set text(lang: "fr")`) et les métadonnées du PDF (`set document(…)`)
         - place la page de garde et les tables demandées
     - `callout(kind, body)` : `kind` vaut `"note"`, `"tip"`, `"important"`, `"warning"` ou `"caution"`
@@ -216,6 +219,6 @@ Combava transforme un fichier markdown avec un frontmatter TOML en PDF, en passa
 
 ## Dépendances
 
-- core : `pulldown-cmark`, `serde`, `thiserror`
-- cli : `clap`, `toml`, `directories`, `include_dir`, `typst`, `typst-pdf`, `typst-kit`
+- core : `pulldown-cmark`, `thiserror`
+- cli : `clap`, `serde`, `toml`, `directories`, `include_dir`, `typst`, `typst-pdf`, `typst-kit`
 - tests : `insta`, `assert_cmd`, `tempfile`
