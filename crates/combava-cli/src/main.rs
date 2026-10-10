@@ -1,10 +1,3 @@
-mod args;
-mod commands;
-mod compile;
-mod config;
-mod diagnostics;
-mod error;
-mod frontmatter;
-mod template;
-
-fn main() {}
+fn main() -> std::process::ExitCode {
+    combava_cli::run()
+}

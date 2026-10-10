@@ -41,19 +41,30 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
     - `crates/combava-cli` : binaire `combava`
         - configuration, accès aux fichiers, compilation PDF
         - `src/`
-            - `main.rs`, `args.rs` : définition des commandes (`clap`)
-            - `commands/` : `build.rs`, `init.rs`
+            - `main.rs` : appelle `combava_cli::run`
+            - `lib.rs` : point d'entrée, sous-commande `help`
+                - bibliothèque interne, exposée seulement pour les tests d'intégration
+            - `args.rs` : définition des commandes (`clap`), textes de l'aide en français
+            - `commands/` : `build.rs`, `init.rs`, écriture atomique des fichiers de sortie
             - `frontmatter.rs` : découpage du bloc `+++`
             - `config/`
+                - `mod.rs` : chargement des couches, résolution du template, de la bibliographie et de la sortie
                 - `layers.rs` : lecture et fusion des couches
                 - `paths.rs` : racine du projet, dossier de config globale, résolution des chemins relatifs
             - `template.rs` : résolution du template, templates embarqués
             - `compile/`
+                - `mod.rs` : compilation, conversion des diagnostics Typst
                 - `world.rs` : le `World` Typst et son système de fichiers virtuel
                 - `pdf.rs` : export PDF
-            - `diagnostics.rs` : affichage des avertissements et des erreurs
-            - `error.rs` : le type d'erreur
-        - `tests/` : configuration, templates, bout en bout
+            - `diagnostics.rs` : diagnostics, positions, affichage
+            - `error.rs` : codes de diagnostic du CLI
+        - `build.rs` : recompile le binaire quand un template embarqué change
+        - `tests/`
+            - `cli_build.rs`, `cli_init.rs` : bout en bout, un test par code de diagnostic
+            - `config_layers.rs` : fusion des couches et chemins relatifs
+            - `template_resolution.rs` : ordre de recherche, remplacement de `default`
+            - `core_fixtures.rs` : le Typst de chaque fixture du core se compile avec un template conforme
+            - `fixtures/templates/minimal/` : template de test conforme au contrat
     - `templates/default/` : le template par défaut, embarqué dans le binaire (`include_dir`)
     - `examples/` : documents d'exemple
 
@@ -152,9 +163,10 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
         4) `<config globale>/config.toml`
             - dossier donné par la crate `directories` : `~/.config/combava` sous Linux, `%APPDATA%\combava` sous Windows, `~/Library/Application Support/combava` sous macOS
         5) valeurs par défaut
-    - chaque couche est désérialisée dans une `struct` du CLI avec `#[serde(deny_unknown_fields)]`
+    - chaque couche est lue avec `toml::de::DeTable`, qui garde la position de chaque clé et de chaque valeur, puis validée à la main
+        - pourquoi pas `#[serde(deny_unknown_fields)]` : les erreurs de serde sont en anglais et ne distinguent pas `unknown-key` de `invalid-type`
         - une clé inconnue est une erreur, avec la clé fautive et sa position
-        - pas de `#[serde(flatten)]` : il est incompatible avec `deny_unknown_fields`
+        - toutes les erreurs de toutes les couches sont rapportées en une fois
     - fusion champ par champ (`a.or(b)`) ; une liste (`authors`…) est remplacée, jamais concaténée
     - le résultat fusionné donne la `Config` du core et les clés propres au CLI
     - clés propres au CLI, en plus de celles de `Config` :
@@ -179,7 +191,7 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
 - compilation (crates `typst`, `typst-pdf`, `typst-kit`)
     - `World` maison :
         - `/` → dossier du `.md`, en lecture seule
-            - un chemin qui en sort (`../`) est refusé avec une erreur claire
+            - un chemin qui en sort (`../`) est refusé : Typst normalise les chemins virtuels
         - `/__combava__/main.typ` → code généré, en mémoire
         - `/__combava__/template/` → dossier du template résolu
         - `/__combava__/bibliography.bib` → fichier `.bib` résolu
@@ -224,11 +236,14 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
     - tests unitaires : échappement, sérialisation des valeurs, chaque élément markdown
     - snapshots (`insta`) : `tests/fixtures/<cas>/input.md` → Typst attendu, rangé dans `tests/snapshots/`
 - cli
-    - fusion des couches de configuration, résolution des templates
-    - bout en bout (`assert_cmd`, `tempfile`) : `build` produit un PDF, `init` refuse d'écraser, une clé inconnue fait échouer
+    - fusion des couches de configuration, résolution des templates : par la bibliothèque, avec un environnement (`Env`) injecté
+    - bout en bout (`assert_cmd`, `tempfile`) : `build` produit un PDF, `init` refuse d'écraser, chaque code de diagnostic
+        - sous Linux, `XDG_CONFIG_HOME` pointe vers un dossier temporaire : la configuration globale de la machine n'influe pas sur les tests
+        - `package-download` est simulé sans réseau : caches de packages vides et proxy injoignable
+    - les tests qui demandent le template par défaut sont ignorés tant que le lot template n'est pas livré
 
 ## Dépendances
 
 - core : `pulldown-cmark`, `thiserror`
-- cli : `clap`, `serde`, `toml`, `directories`, `include_dir`, `typst`, `typst-pdf`, `typst-kit`
+- cli : `clap`, `toml`, `directories`, `include_dir`, `chrono` (date du jour), `typst`, `typst-layout`, `typst-pdf`, `typst-kit`
 - tests : `insta`, `assert_cmd`, `tempfile`

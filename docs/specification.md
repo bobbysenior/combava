@@ -337,13 +337,16 @@ pub struct TranspileError {
     8) compiler (section 8), afficher les diagnostics Typst
     9) écrire le PDF
 - le fichier de sortie n'est écrit (ou remplacé) **que si tout a réussi** : un échec ne détruit jamais le PDF précédent
-- le dossier parent du fichier de sortie doit exister
+    - écriture dans un fichier temporaire du même dossier, puis renommage : un fichier n'est jamais à moitié écrit
+- le dossier parent du fichier de sortie doit exister, sinon erreur `io`
+- un fichier de sortie identique au fichier markdown → erreur `io` (avec `-o rapport.md` par exemple)
 
 ### 5.2 `combava init [OPTIONS] [FILE]`
 
 - `FILE` vaut `rapport.md` par défaut
 - options
-    - `-t`, `--template <TEMPLATE>` : ajoute `template = "<TEMPLATE>"` au frontmatter, valeur recopiée telle quelle
+    - `-t`, `--template <TEMPLATE>` : ajoute `template = "<TEMPLATE>"` au frontmatter, juste avant le `+++` de fin
+        - valeur recopiée telle quelle ; seuls `\` et `"` sont échappés, pour que le TOML reste valide (chemin Windows)
     - `--force` : écrase un fichier existant
 - fichier existant sans `--force` → erreur `file-exists`
 - contenu écrit (la date est celle du jour, en français, `1er` pour le premier du mois) :
@@ -411,6 +414,7 @@ rapport.md:3:1: erreur[unknown-key] : clé inconnue « autors »
 
 - présent si le fichier commence (après un éventuel BOM) par une ligne `+++`
     - espaces et tabulations en fin de ligne tolérés, fins de ligne `\n` ou `\r\n`
+    - un BOM sans frontmatter est lui aussi remplacé par des espaces : il empêcherait de reconnaître un titre en première ligne
 - se termine à la ligne `+++` suivante ; absente → erreur `unclosed-frontmatter`
 - son contenu est du TOML
 - les positions des erreurs TOML sont ramenées à des positions dans le fichier `.md`
@@ -463,6 +467,7 @@ rapport.md:3:1: erreur[unknown-key] : clé inconnue « autors »
     2) `<config globale>/templates/<nom>/`
     3) templates embarqués : `default` (contenu de `templates/default/`, inclus avec `include_dir`)
 - un dossier utilisateur nommé `default` remplace donc le template embarqué
+- le premier dossier existant l'emporte, même sans `template.typ` : un template utilisateur incomplet n'est pas remplacé en silence par le suivant
 - introuvable, ou sans `template.typ` → erreur `template-not-found`
 
 ## 8. Compilation
@@ -479,11 +484,17 @@ rapport.md:3:1: erreur[unknown-key] : clé inconnue « autors »
     2) polices du système
     3) polices embarquées de `typst-kit`
 - packages : téléchargés par `typst-kit` puis mis en cache (même cache que le CLI `typst`)
+    - échec du téléchargement → erreur `package-download` seule : les erreurs Typst qui en découlent (import impossible, `mi` inconnu…) ne sont pas affichées
 - diagnostics Typst (gravité conservée, code `typst`)
     - dans `MAIN` : ligne du code généré → `SourceMap::markdown_line`
         - trouvée → position dans le `.md`, colonne 1
         - `None` → diagnostic sur le `.md` sans ligne, message suivi de `(ligne N du code généré, voir --transpile-only)`
+        - erreur dans le préambule (les lignes qui précèdent la première ligne issue du markdown) → indication : le template doit définir `template` et `callout`, et accepter tous les arguments de la section 9
+            - d'après la section 2.3, le préambule ne contient que les imports et `#show: template.with(…)` : une erreur y vient du template
+    - deux diagnostics identiques une fois convertis ne sont affichés qu'une fois (Typst signale un `unresolved import` par nom importé)
     - dans le template ou la bibliographie → chemin réel du fichier, ligne et colonne de Typst
+        - template embarqué : `<nom>/fichier`, par exemple `<default>/template.typ`
+    - dans un package → `@preview/nom:version/fichier`
     - attention : `typst::syntax::Source` compte les lignes à partir de 0
 - export PDF : `typst-pdf` avec les options par défaut
 
