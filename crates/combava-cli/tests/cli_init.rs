@@ -76,7 +76,6 @@ fn le_fichier_cree_se_compile() {
 }
 
 #[test]
-#[ignore = "en attente du template par défaut (lot template, section 11)"]
 fn le_fichier_cree_se_compile_avec_le_template_par_defaut() {
     let sandbox = Sandbox::new();
     assert_eq!(sandbox.run(&["init"]).0, 0);

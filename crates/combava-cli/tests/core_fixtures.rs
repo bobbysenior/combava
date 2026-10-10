@@ -88,7 +88,6 @@ fn fixtures_du_core_avec_un_template_conforme() {
 }
 
 #[test]
-#[ignore = "en attente du template par défaut (lot template, section 11)"]
 fn fixtures_du_core_avec_le_template_par_defaut() {
     let template = combava_cli::template::resolve(
         &combava_cli::config::layers::TemplateRef::Name("default".into()),

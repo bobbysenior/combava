@@ -25,6 +25,51 @@ fn document_de_reference() {
 }
 
 #[test]
+fn document_de_reference_avec_le_template_par_defaut() {
+    let sandbox = Sandbox::new();
+    let report = workspace().join("examples/report.md");
+    let out = sandbox.path("report.pdf");
+    let (code, stderr) = sandbox.run(&["build", arg(&report), "-o", arg(&out)]);
+    assert_eq!((code, stderr.as_str()), (0, ""));
+    assert!(std::fs::read(&out).unwrap().starts_with(b"%PDF-"));
+}
+
+#[test]
+fn template_par_defaut_sans_aucun_champ() {
+    // Le core passe `none` ou `()` pour chaque argument absent (section 9.1).
+    let sandbox = Sandbox::new();
+    sandbox.write("r.md", "+++\ntoc = false\n+++\n\nTexte.\n");
+    let (code, stderr) = sandbox.run(&["build", "r.md"]);
+    assert_eq!((code, stderr.as_str()), (0, ""));
+}
+
+#[test]
+fn template_par_defaut_titres_dans_des_conteneurs() {
+    // Un titre de niveau 1 ouvre une page, ce que Typst interdit dans un
+    // conteneur.
+    let sandbox = Sandbox::new();
+    sandbox.write(
+        "r.md",
+        "> # Citation\n\n> [!NOTE]\n> # Callout\n\n- # Liste\n\n1. # Numérotée\n\n\
+         Terme\n: # Définition\n\nUne note[^n].\n\n[^n]: # Note\n",
+    );
+    let (code, stderr) = sandbox.run(&["build", "r.md"]);
+    assert_eq!((code, stderr.as_str()), (0, ""));
+}
+
+#[test]
+fn template_par_defaut_callout_inconnu() {
+    let sandbox = Sandbox::new();
+    sandbox.write("r.md", "```{=typst}\n#callout(\"autre\")[x]\n```\n");
+    let (code, stderr) = sandbox.run(&["build", "r.md"]);
+    assert_eq!(code, 1);
+    assert!(
+        stderr.contains("callout : type « autre » inconnu, attendu : « note », « tip »"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn sortie_par_defaut_a_cote_du_markdown() {
     let sandbox = Sandbox::new();
     sandbox.write("docs/rapport.md", DOC);
