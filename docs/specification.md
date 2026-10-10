@@ -5,6 +5,7 @@ Ce document fait foi pour le comportement de Combava et pour l'interface entre `
 - conventions
     - « doit » : obligatoire ; « peut » : laissé au choix de l'implémentation
     - toutes les lignes et colonnes sont numérotées **à partir de 1**
+    - une ligne se termine par `\n`, `\r\n` ou `\r` seul, comme en CommonMark
     - une colonne compte des caractères Unicode (`char`), pas des octets
     - un `span` est une plage d'**octets** `start..end` dans le texte reçu
     - les messages destinés à l'utilisateur sont en français, commencent par une minuscule, n'ont pas de point final et citent les valeurs entre « »
@@ -271,6 +272,7 @@ pub struct TranspileError {
 - tableau → `#table(columns: n, align: (…), table.header(…), …)`
     - alignement `:--` → `left`, `:-:` → `center`, `--:` → `right`, sans indication → `left`
 - ligne horizontale (`---`, `***`, `___`, `- - -`…) → `#pagebreak()`
+    - dans un conteneur (citation, callout, liste, note) → `#line(length: 100%)` : Typst y interdit les sauts de page
 
 ### 4.6 Blocs de code
 
@@ -289,6 +291,10 @@ pub struct TranspileError {
 - premier appel de `[^x]` → `#footnote[contenu de la définition] <combava-fn-x>`
 - appels suivants → `#footnote(<combava-fn-x>)` (même numéro)
 - la définition peut se trouver avant ou après l'appel
+- dans un titre → `#footnote[…]` sans label
+    - pourquoi : Typst recopie les titres dans la table des matières, le label y serait en double
+    - un appel ultérieur hors titre émet une nouvelle note, avec label
+- une note qui s'appelle elle-même : l'appel interne reste du texte
 - le préfixe `combava-fn-` est réservé
 
 ### 4.8 Citations
