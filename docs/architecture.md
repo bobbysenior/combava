@@ -16,18 +16,28 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
         - aucune lecture ni écriture de fichier, aucune dépendance à la crate `typst`
         - utilisable plus tard depuis WASM ou un autre client
         - `src/`
-            - `lib.rs` : fonction `transpile`
+            - `lib.rs` : fonction `transpile`, constantes `paths` et `MITEX_PACKAGE`
             - `config.rs` : la `struct Config`
-            - `output.rs` : `Output` et les diagnostics
+            - `output.rs` : `Output`, `Diagnostic`, `Severity` et `Code`
             - `error.rs` : le type d'erreur
-            - `parser.rs` : options de pulldown-cmark
-            - `escape.rs` : échappement du texte et sérialisation des valeurs en littéraux Typst
-            - `source_map.rs` : correspondance ligne Typst → ligne markdown
+            - `source_map.rs` : correspondance ligne Typst → ligne markdown, et tampon d'écriture qui la construit
+            - `parser.rs` : options de pulldown-cmark, construction de l'arbre du document
+            - `ast.rs` : l'arbre du document (blocs et éléments en ligne, chacun avec sa plage d'octets)
+            - `diag.rs` : collecte des diagnostics, conversion des octets en lignes et colonnes
+            - `label.rs` : labels des titres (`{#id}` et slugs)
+            - `path.rs` : chemins des images
+            - `escape.rs` : échappement du markup, littéraux de chaîne, décodage `%XX`
             - `emit/`
+                - `mod.rs` : assemblage du fichier, état des notes de bas de page
                 - `preamble.rs` : imports et `#show: template.with(…)`
                 - `block.rs` : titres, paragraphes, listes, tableaux, code, figures, callouts…
                 - `inline.rs` : emphase, liens, images en ligne, citations, notes, maths…
-        - `tests/` : snapshots (`transpile_snapshots.rs`, `fixtures/`, `snapshots/`)
+                - `code.rs` : info string des blocs de code (langage, `{caption="…"}`, `{=typst}`)
+        - `tests/`
+            - `transpile_snapshots.rs` : un cas par sous-section de la section 4 de la spécification (`fixtures/`, `snapshots/`)
+            - `diagnostics.rs` : chaque code de diagnostic, avec sa ligne et sa colonne
+            - `contract.rs` : garanties de l'API envers le CLI
+            - `robustness.rs` : entrées aléatoires et imbrications profondes
     - `crates/combava-cli` : binaire `combava`
         - configuration, accès aux fichiers, compilation PDF
         - `src/`
@@ -119,7 +129,7 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
         - citations en bloc → `#quote(block: true)[…]`
         - callouts GFM `> [!NOTE]` → `#callout("note")[…]`
         - maths (LaTeX) : inline `$…$` → `#mi("…")`, display `$$…$$` → `#mitex("…")`
-        - lignes horizontales (`---`, `***`, `___`, `- - -`…) → `#pagebreak()`
+        - lignes horizontales (`---`, `***`, `___`, `- - -`…) → `#pagebreak()` (`#line(length: 100%)` dans un conteneur)
             - attention : une ligne `---` placée juste sous un paragraphe en fait un titre setext (H2) ; il faut une ligne vide avant
         - HTML brut → ignoré avec un avertissement ; les commentaires `<!-- … -->` sont ignorés sans avertissement
     - échappement du texte (module critique, très testé)

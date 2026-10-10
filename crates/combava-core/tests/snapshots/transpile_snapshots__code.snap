@@ -1,0 +1,41 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (code))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+#raw(block: true, lang: "rust", "fn main() {\n    println!(\"{} \\\"#[]\\\"\", 1);\n}")
+
+#figure(raw(block: true, lang: "python", "def tri(l): return sorted(l)"), caption: [Tri rapide])
+
+#figure(raw(block: true, lang: none, "brut"), caption: [Sans \*langage\*])
+
+#raw(block: true, lang: none, "code indenté")
+
+#figure(raw(block: true, lang: "rust", "let x = 1;"), caption: [a])
+
+#let x = 1
+
+#box[Typst brut : #x]
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---
+17:1: Warning[invalid-code-attributes] : attribut de bloc de code inconnu « numbers »

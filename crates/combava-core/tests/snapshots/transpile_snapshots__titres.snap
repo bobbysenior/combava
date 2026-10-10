@@ -1,0 +1,42 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (titres))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+#heading(level: 1)[Introduction]#label("introduction")
+
+#heading(level: 2)[Première partie : l'été !]#label("première-partie--lété-")
+
+#heading(level: 2)[Introduction]#label("introduction-1")
+
+#heading(level: 3)[Section]#label("sec:custom")
+
+#heading(level: 4)[Titre avec #emph[emphase] et #raw("code")]#label("titre-avec-emphase-et-code")
+
+#heading(level: 5)[Niveau 5]#label("niveau-5")
+
+#heading(level: 6)[Niveau 6]#label("niveau-6")
+
+Voir #link(label("introduction"))[l'introduction], #link(label("sec:custom"))[la section] et #link(label("première-partie--lété-"))[la partie];.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---
