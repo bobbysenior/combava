@@ -489,6 +489,9 @@ rapport.md:3:1: erreur[unknown-key] : clé inconnue « autors »
     - dans `MAIN` : ligne du code généré → `SourceMap::markdown_line`
         - trouvée → position dans le `.md`, colonne 1
         - `None` → diagnostic sur le `.md` sans ligne, message suivi de `(ligne N du code généré, voir --transpile-only)`
+        - erreur dans le préambule (les lignes qui précèdent la première ligne issue du markdown) → indication : le template doit définir `template` et `callout`, et accepter tous les arguments de la section 9
+            - d'après la section 2.3, le préambule ne contient que les imports et `#show: template.with(…)` : une erreur y vient du template
+    - deux diagnostics identiques une fois convertis ne sont affichés qu'une fois (Typst signale un `unresolved import` par nom importé)
     - dans le template ou la bibliographie → chemin réel du fichier, ligne et colonne de Typst
         - template embarqué : `<nom>/fichier`, par exemple `<default>/template.typ`
     - dans un package → `@preview/nom:version/fichier`
