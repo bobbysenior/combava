@@ -1,0 +1,33 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (maths))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "@preview/mitex:0.2.7": mi, mitex
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Inline #mi("E = mc^2") et display :
+
+#mitex("\n\\frac{a}{b} = \\sum_{i=1}^{n} x_i\n")
+
+Le prix est de 5 \$ et non 10 \$.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---

@@ -1,0 +1,86 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (blocs))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Paragraphe.
+
+#quote(block: true)[
+Citation sur deux lignes.
+]
+
+#callout("note")[
+Une note.
+]
+
+#callout("caution")[
+Une mise en garde.
+]
+
+#list(tight: true,
+[un],
+[deux
+#list(tight: true,
+[imbriqué],
+)],
+[☐ à faire],
+[☒ fait],
+)
+
+#enum(start: 3, tight: true,
+[trois],
+[quatre],
+)
+
+#enum(start: 1, tight: false,
+[liste],
+[aérée],
+)
+
+#terms(
+terms.item[Terme][Définition 1
+
+Définition 2],
+)
+
+#table(
+  columns: 4,
+  align: (left, center, right, left,),
+  table.header([Gauche], [Centre], [Droite], [Aucun],),
+  [a], [b], [c], [d],
+  [e], [], [], [],
+)
+
+#pagebreak()
+
+Après le saut de page.
+
+#quote(block: true)[
+Citation coupée
+
+#line(length: 100%)
+
+par une ligne.
+]
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---

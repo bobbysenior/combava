@@ -1,0 +1,36 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (notes))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+Une note#footnote[Première note.]#label("combava-fn-1") et une autre#footnote[Une note en deux paragraphes.
+
+Second paragraphe avec #emph[emphase];.]#label("combava-fn-longue"), puis la même note#footnote(label("combava-fn-1")) encore.
+
+Note avec majuscules#footnote[La casse est ignorée.]#label("combava-fn-maj");.
+
+#heading(level: 2)[Titre avec une note#footnote[Une note appelée depuis un titre.]]#label("titre-avec-une-note")
+
+Puis la même note hors du titre#footnote[Une note appelée depuis un titre.]#label("combava-fn-titre");.
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---

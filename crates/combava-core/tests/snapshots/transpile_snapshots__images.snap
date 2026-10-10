@@ -1,0 +1,34 @@
+---
+source: crates/combava-core/tests/transpile_snapshots.rs
+expression: render(stringify! (images))
+---
+// Généré par combava-core 0.1.0 — ne pas modifier
+#import "/__combava__/template/template.typ": template, callout
+#show: template.with(
+  title: "Fixture",
+  subtitle: none,
+  authors: ("Ada Lovelace",),
+  teachers: (),
+  date: none,
+  school: none,
+  university: none,
+  academic-year: none,
+  cohort: none,
+  specialization: none,
+  subject: none,
+  toc: true,
+  list-of-figures: false,
+  list-of-listings: false,
+  header-text: "Fixture",
+)
+
+#figure(image("/images/logo.svg", alt: "Logo de l'école"), caption: [Le logo de l'école])
+
+#figure(image("/images/schema.svg", alt: "Sans légende"))
+
+Une icône #box(image("/images/icone.svg", alt: "icône", height: 1em)) dans une phrase.
+
+#figure(image("/mon image.svg"))
+
+#bibliography("/__combava__/bibliography.bib")
+--- diagnostics ---
