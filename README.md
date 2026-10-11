@@ -117,7 +117,7 @@ Settings come from four layers. The first layer that sets a key wins:
 3. `.combava/config.toml` in the project
 4. `config.toml` in the global configuration directory
 
-The [user guide](docs/guide.md) (in French) explains the header keys, the supported Markdown, the templates, and each error message.
+The [user guide](docs/guide.md) (in French) explains the header keys, the templates, and each error message. The [Markdown reference](docs/markdown.md) describes each supported element, with an example.
 
 ## Status
 
@@ -139,7 +139,7 @@ crates/combava-cli/    the `combava` binary
 templates/default/     the default template, embedded in the binary
 examples/              reference documents
 config/config.toml     the global configuration that `make install` installs
-docs/                  user guide, specification, and architecture
+docs/                  user guide, Markdown reference, specification, and architecture
 assets/                banner and logo
 site/                  static website (home page and docs), published on GitHub Pages
 ```
@@ -150,13 +150,13 @@ site/                  static website (home page and docs), published on GitHub 
 cargo test -p combava-core
 ```
 
-The user guide, the specification, and the architecture notes are written in French. The specification wins if the two documents disagree.
+The user guide, the Markdown reference, the specification, and the architecture notes are written in French. The specification wins if the two documents disagree.
 
 Commit messages follow Conventional Commits, written in French, with a space before the colon: `feat(core) : transpiler le markdown en Typst`.
 
 ## Website
 
-The `site/` folder holds the static website. It has a home page and the three documents of `docs/`, converted to HTML. You need Node.js.
+The `site/` folder holds the static website. It has a home page and the documents of `docs/`, converted to HTML. On the Markdown reference page, each example has a preview of its rendering. Each preview is a small HTML file in `site/src/previews/`, tied to its example by a `{preview=name}` tag on the code block. You need Node.js.
 
 ```bash
 cd site
