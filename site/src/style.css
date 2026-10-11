@@ -286,3 +286,120 @@ pre {
 
 .footer { border-top: 1px solid var(--border); padding: 1.5rem 0; color: var(--muted); font-size: 0.9rem; }
 .footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1.5rem; }
+
+/* ---------- Exemples avec aperçu ---------- */
+
+.prose .example { margin: 0 0 1.25rem; border: 1px solid var(--border); border-radius: 0.7rem; overflow: hidden; }
+.prose .example pre { margin: 0; border-radius: 0; }
+.example-render { padding: 0.6rem 1rem 1rem; background: var(--bg-alt); border-top: 1px solid var(--border); }
+.prose .example-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/*
+ * Simulation du rendu PDF du template par défaut (templates/default/theme.typ).
+ * La « page » reste claire même en thème sombre, comme une feuille de papier.
+ * Les sélecteurs commencent par .prose .pdf pour l'emporter sur le style des pages de doc.
+ */
+.prose .pdf {
+  --bleu: #203363;
+  --bleu-pale: #eff1f6;
+  --accent: #e4572e;
+  --encre: #1b1f2a;
+  --gris: #5f6675;
+  --trait: #d5d9e2;
+  --fond-code: #f4f5f8;
+  padding: 1.1rem 1.4rem;
+  background: #ffffff;
+  color: var(--encre);
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  font: 1rem/1.5 "Libertinus Serif", "Linux Libertine", "Palatino Linotype", Georgia, serif;
+  text-align: justify;
+  hyphens: auto;
+}
+.prose .pdf > :last-child { margin-bottom: 0; }
+.prose .pdf > :first-child { margin-top: 0; }
+.prose .pdf p { margin: 0 0 0.5rem; }
+.prose .pdf p + p { text-indent: 1.2em; }
+.prose .pdf code {
+  padding: 0.05em 0.25em;
+  background: var(--fond-code);
+  border-radius: 2px;
+  font: 0.82em "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+.prose .pdf .pdf-link { color: var(--bleu); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+
+.prose .pdf .pdf-label { display: block; font: 700 0.62rem/1 system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.prose .pdf .pdf-h1 { margin: 0 0 0.8rem; padding-bottom: 0.7rem; border-bottom: 2px solid var(--accent); text-align: left; }
+.prose .pdf .pdf-h1-title { display: block; margin-top: 0.4rem; font-size: 1.9rem; line-height: 1.15; font-weight: 700; color: var(--bleu); }
+.prose .pdf .pdf-h2 { margin: 0.9rem 0 0.4rem; font-size: 1.2rem; font-weight: 700; color: var(--bleu); text-align: left; }
+.prose .pdf .pdf-h3 { margin: 0.8rem 0 0.3rem; font-size: 1rem; font-weight: 600; text-align: left; }
+.prose .pdf .pdf-num { margin-right: 0.6em; color: var(--accent); }
+.prose .pdf .pdf-h3 .pdf-num { color: var(--gris); }
+
+.prose .pdf ul, .prose .pdf ol, .prose .pdf dl { margin: 0 0 0.6rem; padding-left: 1.3rem; text-align: left; }
+.prose .pdf ul { list-style: none; }
+.prose .pdf ul > li { position: relative; }
+.prose .pdf ul > li::before { content: "•"; position: absolute; left: -0.9rem; color: var(--accent); }
+.prose .pdf ol { list-style: none; counter-reset: n; }
+.prose .pdf ol > li { counter-increment: n; position: relative; }
+.prose .pdf ol > li::before { content: counter(n) "."; position: absolute; left: -1.3rem; font-weight: 700; color: var(--bleu); }
+.prose .pdf dt { font-weight: 700; }
+.prose .pdf dd { margin: 0 0 0 1.2rem; }
+
+.prose .pdf .pdf-table { margin: 0 0 0.5rem; min-width: 0; width: 100%; border-collapse: collapse; border-top: 1.5px solid var(--bleu); border-bottom: 1.5px solid var(--bleu); font-size: 0.95rem; }
+.prose .pdf .pdf-table th, .prose .pdf .pdf-table td { padding: 0.4rem 0.7rem; border: 0; }
+.prose .pdf .pdf-table th { background: var(--bleu-pale); color: var(--bleu); font-weight: 700; }
+.prose .pdf .pdf-table tbody tr + tr td, .prose .pdf .pdf-table tbody tr:first-child td { border-top: 1px solid var(--trait); }
+.prose .pdf .pdf-table .l { text-align: left; }
+.prose .pdf .pdf-table .c { text-align: center; }
+.prose .pdf .pdf-table .r { text-align: right; }
+
+.prose .pdf .pdf-quote { margin: 0 0 0.7rem; padding: 0.3rem 0 0.3rem 1rem; border-left: 3px solid var(--accent); color: var(--encre); font-style: italic; }
+
+.prose .pdf .pdf-callout { margin: 0 0 0.7rem; padding: 0.6rem 0.9rem; border-left: 3px solid var(--c); border-radius: 0 3px 3px 0; background: var(--f); text-align: left; }
+.prose .pdf .pdf-callout p { margin: 0; text-indent: 0; }
+.prose .pdf .pdf-callout-title { margin-bottom: 0.25rem; font: 700 0.62rem/1 system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c); }
+.prose .pdf .pdf-note { --c: #203363; --f: #eff1f6; }
+.prose .pdf .pdf-tip { --c: #1f7a4d; --f: #e8f5ee; }
+.prose .pdf .pdf-important { --c: #5b3fa8; --f: #f1edfa; }
+.prose .pdf .pdf-warning { --c: #a15c07; --f: #fdf3e0; }
+.prose .pdf .pdf-caution { --c: #b42318; --f: #fdecea; }
+
+.prose .pdf .pdf-figure { margin: 0 0 0.6rem; text-align: center; }
+.prose .pdf .pdf-figure img { display: block; margin: 0 auto 0.5rem; }
+.prose .pdf .pdf-figure figcaption { font-size: 0.85rem; }
+.prose .pdf .pdf-figure figcaption b { color: var(--bleu); }
+.prose .pdf .pdf-figure .pdf-code { margin-bottom: 0.5rem; text-align: left; }
+
+.prose .pdf .pdf-code { margin: 0 0 0.6rem; padding: 0.5rem 0.8rem; border-radius: 3px; background: var(--fond-code); color: var(--encre); font: 0.82rem/1.5 "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace; text-align: left; }
+.prose .pdf .pdf-code code { padding: 0; background: none; font: inherit; }
+.prose .pdf .c-fn { color: #4b69c6; }
+.prose .pdf .c-str { color: #198810; }
+.prose .pdf .c-kw { color: #d73a49; }
+
+.prose .pdf .pdf-fnref { margin-left: 1px; font-size: 0.7em; }
+.prose .pdf .pdf-footnotes { margin-top: 1.4rem; padding-top: 0.4rem; border-top: 0; font-size: 0.85rem; }
+.prose .pdf .pdf-footnotes::before { content: ""; display: block; width: 25%; margin-bottom: 0.4rem; border-top: 1px solid var(--trait); }
+.prose .pdf .pdf-footnotes p { text-indent: 0; }
+.prose .pdf .pdf-footnotes sup { margin-right: 0.3em; font-size: 0.75em; }
+
+.prose .pdf i { font-style: italic; }
+.prose .pdf .pdf-eq { display: flex; align-items: center; justify-content: center; gap: 0.4em; margin: 0.4rem 0; font-size: 1.1rem; }
+.prose .pdf .pdf-sum, .prose .pdf .pdf-frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.prose .pdf .pdf-sum-top, .prose .pdf .pdf-sum-bottom { font-size: 0.7em; }
+.prose .pdf .pdf-sum-sign { font-size: 1.7em; line-height: 1; }
+.prose .pdf .pdf-frac-top { padding: 0 0.3em 0.1em; border-bottom: 1px solid currentColor; }
+
+.prose .pdf:has(.pdf-pages) { padding: 0.8rem; background: #e3e6ed; box-shadow: none; }
+.prose .pdf .pdf-pages { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.prose .pdf .pdf-page { display: flex; align-items: center; justify-content: center; min-height: 6.5rem; padding: 0.8rem; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); text-align: center; font-size: 0.9rem; }
+.prose .pdf .pdf-page p { margin: 0; text-indent: 0; }
+
+.prose .pdf .pdf-centered { text-align: center; text-indent: 0; }

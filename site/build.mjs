@@ -4,7 +4,7 @@
 // Tous les liens sont relatifs : le site fonctionne à la racine d'un domaine
 // comme dans le sous-dossier d'un projet GitHub Pages.
 
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import hljs from "highlight.js/lib/core";
@@ -17,6 +17,8 @@ import { Marked } from "marked";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(ROOT, "site", "src");
+// Aperçus HTML des exemples de docs/markdown.md, un fichier par exemple.
+const PREVIEWS = join(SRC, "previews");
 const DIST = join(ROOT, "site", "dist");
 
 const REPO_URL = "https://github.com/bobbysenior/combava";
@@ -24,6 +26,7 @@ const REPO_URL = "https://github.com/bobbysenior/combava";
 // Ordre d'affichage dans la navigation.
 const DOCS = [
   { file: "guide", label: "Guide d'utilisation" },
+  { file: "markdown", label: "Référence markdown" },
   { file: "specification", label: "Spécification" },
   { file: "architecture", label: "Architecture" },
 ];
@@ -69,7 +72,9 @@ const plainText = (md) =>
     .replace(/[`*]/g, "")
     .replace(/(^|\W)_|_(\W|$)/g, "$1$2");
 
-function render(markdown, file) {
+// Un bloc ```markdown {preview=nom} est suivi de l'aperçu `previews/nom.html`.
+// Sur GitHub, l'étiquette est ignorée : le bloc reste un simple bloc de code.
+function render(markdown, file, previews, usedPreviews) {
   const slug = slugger();
   const headings = [];
   const links = [];
@@ -84,11 +89,20 @@ function render(markdown, file) {
       },
       code({ text, lang }) {
         const name = (lang ?? "").split(/\s/)[0];
+        const preview = (lang ?? "").match(/\{preview=([\w-]+)\}/)?.[1];
         const code = hljs.getLanguage(name)
           ? hljs.highlight(text, { language: name }).value
           : escapeHtml(text);
         const cls = hljs.getLanguage(name) ? ` language-${name}` : "";
-        return `<pre><code class="hljs${cls}">${code}</code></pre>\n`;
+        const block = `<pre><code class="hljs${cls}">${code}</code></pre>\n`;
+        if (!preview) return block;
+        if (!(preview in previews)) throw new Error(`${file}.md : aperçu introuvable « ${preview} »`);
+        usedPreviews.add(preview);
+        return (
+          `<div class="example">${block}` +
+          `<div class="example-render"><p class="example-label">Rendu</p>` +
+          `<div class="pdf">${previews[preview]}</div></div></div>\n`
+        );
       },
       link({ href, title, tokens }) {
         const inner = this.parser.parseInline(tokens);
@@ -201,18 +215,31 @@ ${html}
 
 async function main() {
   await rm(DIST, { recursive: true, force: true });
-  await mkdir(join(DIST, "docs"), { recursive: true });
+  await mkdir(join(DIST, "docs", "previews"), { recursive: true });
 
   const summaries = {
     guide: "Installer combava, écrire un document, régler l'en-tête, comprendre les erreurs.",
+    markdown: "Tout le markdown pris en charge par combava, avec un exemple et son rendu pour chaque élément.",
     specification: "Le comportement exact de combava : markdown pris en charge, diagnostics, contrat du template.",
     architecture: "L'organisation du code : combava-core, combava-cli et le template.",
   };
 
+  const previews = {};
+  for (const f of await readdir(PREVIEWS)) {
+    if (f.endsWith(".html")) previews[f.slice(0, -5)] = (await read(join(PREVIEWS, f))).trim();
+  }
+  const usedPreviews = new Set();
+
   const pages = {};
   for (const d of DOCS) {
     const md = await read(join(ROOT, "docs", `${d.file}.md`));
-    pages[d.file] = { ...d, ...render(md, d.file) };
+    pages[d.file] = { ...d, ...render(md, d.file, previews, usedPreviews) };
+  }
+
+  const unused = Object.keys(previews).filter((name) => !usedPreviews.has(name));
+  if (unused.length > 0) {
+    console.error(`aperçus jamais utilisés : ${unused.join(", ")}`);
+    process.exit(1);
   }
 
   // Liens internes cassés : le build s'arrête, comme combava le ferait.
@@ -248,6 +275,7 @@ async function main() {
   await writeFile(join(DIST, "index.html"), shell);
 
   await cp(join(SRC, "style.css"), join(DIST, "style.css"));
+  await cp(join(ROOT, "examples", "images", "pipeline.svg"), join(DIST, "docs", "previews", "pipeline.svg"));
   await cp(join(ROOT, "assets", "logo.svg"), join(DIST, "logo.svg"));
   await writeFile(join(DIST, ".nojekyll"), "");
 
