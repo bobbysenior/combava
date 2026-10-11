@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Image des cartes sociales</title>
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    display: flex;
+    align-items: center;
+    gap: 56px;
+    padding: 0 90px;
+    box-sizing: border-box;
+    background:
+      radial-gradient(520px 520px at 230px 300px, rgba(168, 216, 74, 0.28), transparent),
+      linear-gradient(135deg, #16280f, #0c1709);
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
+  }
+  img { width: 300px; height: 300px; flex: none; }
+  h1 { margin: 0; font-size: 150px; line-height: 1; letter-spacing: -4px; color: #eef6c8; }
+  .tagline { margin: 16px 0 0; font-size: 40px; white-space: nowrap; color: #a8d84a; }
+  .pipeline { margin: 34px 0 0; font: 28px "DejaVu Sans Mono", monospace; color: #7fa24a; }
+</style>
+<img src="../../assets/logo.svg" alt="">
+<div>
+  <h1>combava</h1>
+  <p class="tagline">Du markdown au PDF, sans réglage.</p>
+  <p class="pipeline">markdown → typst → pdf</p>
+</div>

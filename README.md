@@ -164,6 +164,8 @@ npm ci
 npm run build     # writes site/dist
 ```
 
+The build sets the SEO files: `sitemap.xml`, `robots.txt`, canonical links, Open Graph and Twitter cards, and `404.html`. The public address is in `site/build.mjs` (`SITE_URL`). You can override it with the `SITE_URL` environment variable. The PNG images (social card, favicons) are in `site/src/`. To make them again, run `CHROME=/path/to/chromium sh site/tools/images.sh`.
+
 The workflow `.github/workflows/pages.yml` publishes the site on each push to `main` that changes the site or the docs. The build stops if a link between two documents is broken.
 
 ## License
