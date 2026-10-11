@@ -11,6 +11,10 @@
 *.pdf
 /examples/**/*.typ
 
+# Site statique
+/site/node_modules
+/site/dist
+
 # Éditeurs
 .idea/
 .vscode/
