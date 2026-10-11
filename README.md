@@ -141,6 +141,7 @@ examples/              reference documents
 config/config.toml     the global configuration that `make install` installs
 docs/                  user guide, specification, and architecture
 assets/                banner and logo
+site/                  static website (home page and docs), published on GitHub Pages
 ```
 
 ## Development
@@ -152,6 +153,18 @@ cargo test -p combava-core
 The user guide, the specification, and the architecture notes are written in French. The specification wins if the two documents disagree.
 
 Commit messages follow Conventional Commits, written in French, with a space before the colon: `feat(core) : transpiler le markdown en Typst`.
+
+## Website
+
+The `site/` folder holds the static website. It has a home page and the three documents of `docs/`, converted to HTML. You need Node.js.
+
+```bash
+cd site
+npm ci
+npm run build     # writes site/dist
+```
+
+The workflow `.github/workflows/pages.yml` publishes the site on each push to `main` that changes the site or the docs. The build stops if a link between two documents is broken.
 
 ## License
 
