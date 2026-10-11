@@ -5,6 +5,7 @@
 #   make uninstall   retire le binaire, conserve la configuration
 #   make build       compile le binaire (target/release/combava)
 #   make test        lance tous les tests
+#   make clean       supprime les résidus de compilation (cargo clean)
 #
 # Une configuration ou un template déjà installé n'est jamais écrasé : il peut
 # avoir été modifié (réglages, vrais logos). `make install FORCE=1` le remplace.
@@ -30,7 +31,7 @@ BIN := target/release/combava
 CONFIG := $(CONFIG_DIR)/config.toml
 TEMPLATE := $(CONFIG_DIR)/templates/default
 
-.PHONY: all build test install uninstall
+.PHONY: all build test clean install uninstall
 
 all: build
 
@@ -39,6 +40,9 @@ build:
 
 test:
 	$(CARGO) test --workspace
+
+clean:
+	$(CARGO) clean
 
 install: build
 	@mkdir -p '$(BINDIR)'

@@ -1,0 +1,13 @@
+{
+  "name": "combava-site",
+  "private": true,
+  "type": "module",
+  "description": "Site statique de combava : page d'accueil et documentation générée depuis ../docs",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "highlight.js": "11.12.0",
+    "marked": "18.1.0"
+  }
+}
