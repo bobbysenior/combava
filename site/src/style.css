@@ -403,3 +403,11 @@ pre {
 .prose .pdf .pdf-page p { margin: 0; text-indent: 0; }
 
 .prose .pdf .pdf-centered { text-align: center; text-indent: 0; }
+
+/* ---------- Page 404 ---------- */
+
+.not-found { padding-top: 5rem; padding-bottom: 6rem; text-align: center; }
+.not-found h1 { margin: 0 0 0.75rem; font-size: 2rem; }
+.not-found p { color: var(--muted); }
+.not-found-code { margin: 0; font-size: 5rem; font-weight: 800; line-height: 1; color: var(--accent); }
+.not-found .actions { margin-top: 1.5rem; }

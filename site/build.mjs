@@ -4,6 +4,7 @@
 // Tous les liens sont relatifs : le site fonctionne à la racine d'un domaine
 // comme dans le sous-dossier d'un projet GitHub Pages.
 
+import { execFileSync } from "node:child_process";
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +23,16 @@ const PREVIEWS = join(SRC, "previews");
 const DIST = join(ROOT, "site", "dist");
 
 const REPO_URL = "https://github.com/bobbysenior/combava";
+const PORTFOLIO_URL = "https://thomas.mezino.re";
+
+// URL publique du site, sans « / » final : le sitemap, les liens canoniques et
+// les images des cartes sociales exigent des URL absolues. SITE_URL permet de
+// générer le site pour une autre adresse (test, domaine différent).
+const SITE_URL = (process.env.SITE_URL ?? "https://thomas.mezino.re/combava").replace(/\/+$/, "");
+const BASE_PATH = new URL(SITE_URL).pathname.replace(/\/+$/, "");
+
+const SITE_NAME = "Combava";
+const SOCIAL_IMAGE = { file: "og-image.png", width: 1200, height: 630, alt: "Combava : du markdown au PDF, sans réglage." };
 
 // Ordre d'affichage dans la navigation.
 const DOCS = [
@@ -143,7 +154,32 @@ function render(markdown, file, previews, usedPreviews) {
 
 const read = (path) => readFile(path, "utf8");
 
-function layout({ title, description, body, root, current }) {
+// path : chemin de la page dans le site (« index.html », « docs/guide.html »),
+// qui donne le lien canonique et l'URL des cartes sociales. Sans path, la page
+// est exclue de l'indexation (404).
+function layout({ title, description, body, root, current, path, type = "website" }) {
+  const url = path === undefined ? undefined : path === "index.html" ? `${SITE_URL}/` : `${SITE_URL}/${path}`;
+  const t = escapeHtml(title);
+  const d = escapeHtml(description);
+  const image = `${SITE_URL}/${SOCIAL_IMAGE.file}`;
+  const social = url === undefined ? "" : `
+  <link rel="canonical" href="${url}">
+  <meta property="og:type" content="${type}">
+  <meta property="og:site_name" content="${SITE_NAME}">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:title" content="${t}">
+  <meta property="og:description" content="${d}">
+  <meta property="og:url" content="${url}">
+  <meta property="og:image" content="${image}">
+  <meta property="og:image:width" content="${SOCIAL_IMAGE.width}">
+  <meta property="og:image:height" content="${SOCIAL_IMAGE.height}">
+  <meta property="og:image:alt" content="${escapeHtml(SOCIAL_IMAGE.alt)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${t}">
+  <meta name="twitter:description" content="${d}">
+  <meta name="twitter:image" content="${image}">
+  <meta name="twitter:image:alt" content="${escapeHtml(SOCIAL_IMAGE.alt)}">`;
+  const robots = url === undefined ? '\n  <meta name="robots" content="noindex">' : "";
   const nav = DOCS.map(
     (d) =>
       `<a href="${root}docs/${d.file}.html"${d.file === current ? ' aria-current="page"' : ""}>${d.label}</a>`,
@@ -154,8 +190,12 @@ function layout({ title, description, body, root, current }) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}">
+  <meta name="description" content="${d}">
+  <meta name="author" content="bobbysenior">
+  <meta name="theme-color" content="#3a7a1a">${robots}${social}
   <link rel="icon" type="image/svg+xml" href="${root}logo.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="${root}favicon-32.png">
+  <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
   <link rel="stylesheet" href="${root}style.css">
 </head>
 <body>
@@ -172,7 +212,7 @@ ${body}
   <footer class="footer">
     <div class="wrap">
       <span>Combava est publié sous <a href="${REPO_URL}/blob/main/LICENSE">licence MIT</a>.</span>
-      <span><a href="${REPO_URL}">Code source</a></span>
+      <span><a href="${REPO_URL}">Code source</a> · <a href="${PORTFOLIO_URL}" rel="author">Autres projets</a></span>
     </div>
   </footer>
 </body>
@@ -210,6 +250,8 @@ ${html}
     body,
     root: "../",
     current: file,
+    path: `docs/${file}.html`,
+    type: "article",
   });
 }
 
@@ -271,12 +313,57 @@ async function main() {
     body: home,
     root: "",
     current: "",
+    path: "index.html",
   });
   await writeFile(join(DIST, "index.html"), shell);
+
+  // GitHub Pages sert 404.html pour toute adresse inconnue du site, à n'importe
+  // quelle profondeur : ses liens sont donc absolus (depuis la racine du site).
+  const notFound = layout({
+    title: "Page introuvable – combava",
+    description: "Cette page n'existe pas.",
+    body: `  <main class="wrap not-found">
+    <p class="not-found-code">404</p>
+    <h1>Page introuvable</h1>
+    <p>Cette adresse ne mène à rien. Retournez à l'accueil ou ouvrez la documentation.</p>
+    <p class="actions">
+      <a class="button primary" href="${BASE_PATH}/index.html">Accueil</a>
+      <a class="button" href="${BASE_PATH}/docs/guide.html">Guide d'utilisation</a>
+    </p>
+  </main>`,
+    root: `${BASE_PATH}/`,
+    current: "",
+  });
+  await writeFile(join(DIST, "404.html"), notFound);
+
+  // Sitemap : la date d'une page est celle du dernier commit qui touche sa source.
+  const lastModified = (...paths) => {
+    try {
+      const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", ...paths], { cwd: ROOT, encoding: "utf8" });
+      return out.trim() || undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  const entries = [
+    { loc: `${SITE_URL}/`, date: lastModified("site/src/index.html", "site/src/style.css") },
+    ...DOCS.map((d) => ({ loc: `${SITE_URL}/docs/${d.file}.html`, date: lastModified(`docs/${d.file}.md`) })),
+  ];
+  const urls = entries
+    .map((e) => `  <url>\n    <loc>${e.loc}</loc>${e.date ? `\n    <lastmod>${e.date}</lastmod>` : ""}\n  </url>`)
+    .join("\n");
+  await writeFile(
+    join(DIST, "sitemap.xml"),
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+  );
+  await writeFile(join(DIST, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
   await cp(join(SRC, "style.css"), join(DIST, "style.css"));
   await cp(join(ROOT, "examples", "images", "pipeline.svg"), join(DIST, "docs", "previews", "pipeline.svg"));
   await cp(join(ROOT, "assets", "logo.svg"), join(DIST, "logo.svg"));
+  for (const f of [SOCIAL_IMAGE.file, "favicon-32.png", "apple-touch-icon.png"]) {
+    await cp(join(SRC, f), join(DIST, f));
+  }
   await writeFile(join(DIST, ".nojekyll"), "");
 
   console.log(`site généré dans ${DIST}`);
