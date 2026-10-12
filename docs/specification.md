@@ -271,6 +271,12 @@ pub struct TranspileError {
 - liste de définitions → `#terms(terms.item[terme][définition], …)` ; plusieurs définitions d'un même terme sont séparées par un paragraphe
 - tableau → `#table(columns: n, align: (…), table.header(…), …)`
     - alignement `:--` → `left`, `:-:` → `center`, `--:` → `right`, sans indication → `left`
+    - légende : paragraphe qui suit immédiatement le tableau et commence par `:` suivi d'une espace ou d'une tabulation (`: Légende`, syntaxe de Pandoc)
+        - → `#figure(table(…), caption: […])` ; le paragraphe disparaît du flux
+        - la légende est du markdown en ligne (emphase, code, maths…), sans le `:` ni les espaces qui le suivent
+        - une ligne vide est nécessaire entre le tableau et la légende : sinon GFM lit la ligne comme une ligne du tableau
+        - `\:` en début de paragraphe n'est pas une légende ; un tableau n'a qu'une légende
+        - les notes de bas de page de la légende sont émises sans label, comme dans un titre (section 4.7)
 - ligne horizontale (`---`, `***`, `___`, `- - -`…) → `#pagebreak()`
     - dans un conteneur (citation, callout, liste, note) → `#line(length: 100%)` : Typst y interdit les sauts de page
 

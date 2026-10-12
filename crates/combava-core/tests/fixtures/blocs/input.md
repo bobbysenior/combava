@@ -31,6 +31,12 @@ Terme
 | a | b | c | d |
 | e |
 
+| Étape | Durée |
+|-------|------:|
+| Tri   | 2 s   |
+
+: Durée des *étapes*, en secondes
+
 ---
 
 Après le saut de page.

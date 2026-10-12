@@ -377,6 +377,7 @@ pre {
 .prose .pdf .pdf-figure figcaption { font-size: 0.85rem; }
 .prose .pdf .pdf-figure figcaption b { color: var(--bleu); }
 .prose .pdf .pdf-figure .pdf-code { margin-bottom: 0.5rem; text-align: left; }
+.prose .pdf .pdf-figure figcaption + .pdf-table { margin-top: 0.5rem; }
 
 .prose .pdf .pdf-code { margin: 0 0 0.6rem; padding: 0.5rem 0.8rem; border-radius: 3px; background: var(--fond-code); color: var(--encre); font: 0.82rem/1.5 "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace; text-align: left; }
 .prose .pdf .pdf-code code { padding: 0; background: none; font: inherit; }

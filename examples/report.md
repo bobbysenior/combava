@@ -70,6 +70,8 @@ Terme
 | Émission | arbre | Typst |
 | Compilation | Typst | PDF |
 
+: Les étapes de la compilation
+
 ## Citations et callouts
 
 > Le markdown est fait pour être lu tel quel, sans rendu.

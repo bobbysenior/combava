@@ -70,6 +70,13 @@ Définition 2],
   [e], [], [], [],
 )
 
+#figure(table(
+  columns: 2,
+  align: (left, right,),
+  table.header([Étape], [Durée],),
+  [Tri], [2 s],
+), caption: [Durée des #emph[étapes], en secondes])
+
 #pagebreak()
 
 Après le saut de page.

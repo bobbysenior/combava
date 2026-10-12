@@ -67,7 +67,11 @@ impl Builder<'_, '_, '_> {
                     self.events.next();
                     break;
                 }
-                Event::Start(tag) if !is_inline_tag(tag) => blocks.extend(self.block()),
+                Event::Start(tag) if !is_inline_tag(tag) => {
+                    if let Some(block) = self.block() {
+                        push_block(&mut blocks, block);
+                    }
+                }
                 Event::Rule => {
                     if let Some((_, span)) = self.events.next() {
                         blocks.push(Block {
@@ -179,6 +183,7 @@ impl Builder<'_, '_, '_> {
                     aligns: aligns.into_iter().map(align).collect(),
                     header,
                     rows,
+                    caption: None,
                 }
             }
             _ => {
@@ -432,6 +437,54 @@ impl Builder<'_, '_, '_> {
     }
 }
 
+/// Ajoute `block`, sauf s'il est la légende `: …` du tableau qui le précède :
+/// elle est alors rattachée au tableau.
+fn push_block(blocks: &mut Vec<Block>, mut block: Block) {
+    if let Some(Block {
+        kind: BlockKind::Table { caption, .. },
+        ..
+    }) = blocks.last_mut()
+        && caption.is_none()
+        && let BlockKind::Paragraph(inlines) = &mut block.kind
+        && strip_caption_marker(inlines, block.span.start)
+    {
+        *caption = Some(std::mem::take(inlines));
+        return;
+    }
+    blocks.push(block);
+}
+
+/// Retire le `:` d'une légende de tableau (`: Légende`) ; `false` si le
+/// paragraphe, qui commence à l'octet `start`, n'en est pas une.
+///
+/// Le `:` doit ouvrir le paragraphe dans le source : `\:` le désactive.
+fn strip_caption_marker(inlines: &mut Vec<Inline>, start: usize) -> bool {
+    let Some(Inline {
+        kind: InlineKind::Text(text),
+        span,
+    }) = inlines.first_mut()
+    else {
+        return false;
+    };
+    let Some(rest) = text.strip_prefix(':') else {
+        return false;
+    };
+    if span.start != start || !rest.starts_with([' ', '\t']) {
+        return false;
+    }
+    let rest = rest.trim_start_matches([' ', '\t']);
+    if rest.is_empty() {
+        if inlines.len() == 1 {
+            return false;
+        }
+        inlines.remove(0);
+    } else {
+        span.start += text.len() - rest.len();
+        *text = rest.to_string();
+    }
+    true
+}
+
 fn is_inline_tag(tag: &Tag) -> bool {
     matches!(
         tag,
@@ -551,6 +604,54 @@ mod tests {
             codes,
             [(Code::RawHtml, 1), (Code::RawHtml, 5), (Code::RawHtml, 5)]
         );
+    }
+
+    fn table_caption(markdown: &str) -> Option<String> {
+        let (document, _) = parse_str(markdown);
+        let BlockKind::Table { caption, .. } = &document.blocks[0].kind else {
+            panic!("tableau attendu");
+        };
+        caption.as_ref().map(|inlines| {
+            inlines
+                .iter()
+                .map(|inline| match &inline.kind {
+                    InlineKind::Text(text) => format!("{text}@{}", inline.span.start),
+                    _ => "…".to_string(),
+                })
+                .collect()
+        })
+    }
+
+    #[test]
+    fn legende_de_tableau() {
+        let table = "| a |\n|---|\n| 1 |\n\n";
+        assert_eq!(
+            table_caption(&format!("{table}:  Ma légende\n")),
+            Some("Ma légende@22".into())
+        );
+        assert_eq!(
+            table_caption(&format!("{table}: *mise* en forme\n")),
+            Some("… en forme@27".into())
+        );
+        let (document, _) = parse_str(&format!("{table}: Légende\n\nTexte\n"));
+        assert_eq!(document.blocks.len(), 2);
+    }
+
+    #[test]
+    fn pas_de_legende_de_tableau() {
+        let table = "| a |\n|---|\n| 1 |\n\n";
+        for after in [":collé", "\\: échappé", ":", "Texte : non"] {
+            let markdown = format!("{table}{after}\n");
+            assert_eq!(table_caption(&markdown), None, "{after}");
+            let (document, _) = parse_str(&markdown);
+            assert_eq!(document.blocks.len(), 2, "{after}");
+        }
+        // Une seule légende par tableau.
+        let (document, _) = parse_str(&format!("{table}: Une\n\n: Deux\n"));
+        assert_eq!(document.blocks.len(), 2);
+        // Sans tableau, `: …` reste un paragraphe.
+        let (document, _) = parse_str("Texte\n\n```\n```\n\n: seul\n");
+        assert!(matches!(document.blocks[2].kind, BlockKind::Paragraph(_)));
     }
 
     #[test]

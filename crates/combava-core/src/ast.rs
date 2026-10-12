@@ -49,6 +49,8 @@ pub(crate) enum BlockKind {
         aligns: Vec<Align>,
         header: Vec<Vec<Inline>>,
         rows: Vec<Vec<Vec<Inline>>>,
+        /// Paragraphe `: Légende` qui suit le tableau, sans le `:`.
+        caption: Option<Vec<Inline>>,
     },
     Rule,
 }

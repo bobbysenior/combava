@@ -64,7 +64,8 @@ impl Emitter<'_, '_, '_> {
                 aligns,
                 header,
                 rows,
-            } => self.table(aligns, header, rows),
+                caption,
+            } => self.table(aligns, header, rows, caption.as_deref()),
             // Un saut de page est interdit dans un conteneur Typst (citation, callout…).
             BlockKind::Rule if top_level => {
                 self.w.push("#pagebreak()");
@@ -173,7 +174,13 @@ impl Emitter<'_, '_, '_> {
         self.w.end_code();
     }
 
-    fn table(&mut self, aligns: &[Align], header: &[Vec<Inline>], rows: &[Vec<Vec<Inline>>]) {
+    fn table(
+        &mut self,
+        aligns: &[Align],
+        header: &[Vec<Inline>],
+        rows: &[Vec<Vec<Inline>>],
+        caption: Option<&[Inline]>,
+    ) {
         let columns = aligns.len().max(1);
         let aligns: Vec<_> = (0..columns)
             .map(|i| match aligns.get(i) {
@@ -182,8 +189,13 @@ impl Emitter<'_, '_, '_> {
                 Some(Align::Left) | None => "left",
             })
             .collect();
+        if caption.is_some() {
+            self.w.push("#figure(");
+        } else {
+            self.w.push("#");
+        }
         self.w.push(&format!(
-            "#table(\n  columns: {columns},\n  align: ({},),\n  table.header(",
+            "table(\n  columns: {columns},\n  align: ({},),\n  table.header(",
             aligns.join(", ")
         ));
         self.cells(header, columns);
@@ -196,8 +208,26 @@ impl Emitter<'_, '_, '_> {
             self.cells(row, columns);
             self.w.push("\n");
         }
-        self.w.push(")");
+        match caption {
+            Some(caption) => {
+                if let Some(first) = caption.first() {
+                    self.w.set_tag(Some(self.line(first.span.start)));
+                }
+                self.w.push("), caption: [");
+                self.caption(caption);
+                self.w.push("])");
+            }
+            None => self.w.push(")"),
+        }
         self.w.end_code();
+    }
+
+    /// Une liste des tableaux, si le template en dessine une, recopie la
+    /// légende comme la table des matières recopie les titres.
+    fn caption(&mut self, caption: &[Inline]) {
+        let outer = std::mem::replace(&mut self.in_heading, true);
+        self.inlines(caption);
+        self.in_heading = outer;
     }
 
     /// Exactement `columns` cellules : complète ou tronque la ligne.

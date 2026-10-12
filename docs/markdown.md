@@ -86,9 +86,15 @@ Terme
 |:------------|:--------:|-------:|
 | Parsing     | markdown | arbre  |
 | Compilation | Typst    | PDF    |
+
+: Les étapes de la compilation
 ```
 
-`:--` aligne à gauche, `:-:` centre, `--:` aligne à droite.
+- `:--` aligne à gauche, `:-:` centre, `--:` aligne à droite.
+- Un paragraphe qui commence par `: ` juste après le tableau devient sa **légende** : le tableau est alors numéroté (« Tableau 1 ») et sa légende placée au-dessus. Laissez une ligne vide entre les deux : sans elle, la ligne ferait partie du tableau.
+- La légende peut contenir de la mise en forme, du code ou une formule.
+- Pour commencer un paragraphe par `:` sans en faire une légende, écrivez `\:`.
+
 
 ## Citations et encadrés
 

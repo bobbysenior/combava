@@ -81,7 +81,7 @@ fn main() {
 Maths use LaTeX: $E = mc^2$.
 ````
 
-Supported Markdown: headings with labels, links and wikilinks, images with captions, tables, footnotes, task lists, definition lists, callouts, math, code blocks with captions, and citations. The full list, with the exact Typst output for each case, is in section 4 of the [specification](docs/specification.md#4-correspondance-markdown--typst). A complete reference document is in [`examples/report.md`](examples/report.md).
+Supported Markdown: headings with labels, links and wikilinks, images with captions, tables with captions, footnotes, task lists, definition lists, callouts, math, code blocks with captions, and citations. The full list, with the exact Typst output for each case, is in section 4 of the [specification](docs/specification.md#4-correspondance-markdown--typst). A complete reference document is in [`examples/report.md`](examples/report.md).
 
 If Markdown cannot say what you need, a fenced block marked ` ```{=typst} ` is copied as Typst code. This is the only escape hatch.
 
