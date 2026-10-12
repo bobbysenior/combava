@@ -166,6 +166,9 @@
     stroke: (top: 1.2pt + couleur.bleu, bottom: 1.2pt + couleur.bleu),
     it,
   )
+  // Un tableau trop haut pour la place restante se coupe entre deux pages,
+  // l'en-tête répété, au lieu de laisser une page vide derrière un titre.
+  show figure.where(kind: table): set block(breakable: true)
 
   // ---------------------------------------------------------------- Code ---
   show raw: set text(font: police.code)
