@@ -145,7 +145,6 @@
   // ------------------------------------------------------------- Figures ---
   set figure(gap: 0.9em)
   show figure: set block(above: 1.6em, below: 1.6em)
-  show figure.where(kind: table): set figure.caption(position: top)
   set figure.caption(separator: [ — ])
   show figure.caption: it => context {
     set par(first-line-indent: 0pt)
