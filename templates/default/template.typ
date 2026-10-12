@@ -33,11 +33,11 @@
   block(width: 100%, below: 1.6cm, {
     if it.numbering != none {
       context etiquette("Chapitre " + numero(it), fill: couleur.accent, taille: 9.5pt)
-      v(8pt)
+      v(0pt)
     }
     set par(first-line-indent: 0pt, leading: 0.45em)
-    text(size: 28pt, weight: "bold", fill: couleur.bleu, it.body)
-    v(12pt)
+    text(size: 24pt, weight: "bold", fill: couleur.bleu, it.body)
+    v(0pt)
     filet-accent()
   })
 }
@@ -73,7 +73,7 @@
 
   // ---------------------------------------------------------------- Texte ---
   set text(font: police.texte, size: mise-en-page.corps, lang: "fr", fill: couleur.encre)
-  set par(justify: true, leading: 0.68em, spacing: 0.68em, first-line-indent: 1.2em)
+  set par(justify: true, leading: 0.68em, spacing: 1.5em, first-line-indent: 0em)
   set list(marker: text(fill: couleur.accent)[•], indent: 0.6em, body-indent: 0.6em)
   set enum(numbering: n => text(fill: couleur.bleu, weight: "bold")[#n.], indent: 0.6em)
   show list: set block(above: 1.1em, below: 1.1em)
