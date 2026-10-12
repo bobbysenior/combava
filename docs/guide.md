@@ -229,7 +229,7 @@ Un chemin relatif est résolu par rapport à l'endroit où il est écrit :
 
 ## Écrire en markdown
 
-Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés, blocs de code, notes de bas de page, formules. Chaque élément, avec un exemple et son rendu, est décrit dans la [référence markdown](markdown.md).
+Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés, blocs de code, notes de bas de page, formules. Il y ajoute les légendes de tableaux, les citations bibliographiques `[@cle]` et les labels `{#id}`, pour renvoyer à un titre ou à un tableau depuis le texte. Chaque élément, avec un exemple et son rendu, est décrit dans la [référence markdown](markdown.md).
 
 ## Bibliographie
 
@@ -256,9 +256,14 @@ Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés
     Le livre de référence [@knuth1984].
     ```
 
-La bibliographie est ajoutée à la fin du document. Le template par défaut utilise le style ISO 690 auteur-date.
+La bibliographie est ajoutée à la fin du document, après le dernier chapitre. Elle ne contient que les références citées. Le template par défaut utilise le style ISO 690 auteur-date : « (Knuth 1984) ».
 
-Une citation sans bibliographie déclarée est une erreur. Une adresse comme `ada@exemple.fr` n'est pas une citation : seule la forme `[@cle]` en est une.
+Deux erreurs arrêtent la compilation :
+
+- une citation alors qu'aucune bibliographie n'est déclarée (`citation-without-bibliography`) ;
+- une clé absente du fichier `.bib` (erreur `typst`, signalée à la ligne de la citation).
+
+Une adresse comme `ada@exemple.fr` n'est pas une citation : seule la forme `[@cle]` en est une. Si `cle` est le label d'un tableau du document, `[@cle]` affiche son numéro (« Tableau 1 ») au lieu de citer une référence : voir [Labels et renvois](markdown.md#labels-et-renvois).
 
 ## Templates
 

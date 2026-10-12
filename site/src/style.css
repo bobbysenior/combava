@@ -386,6 +386,9 @@ pre {
 
 .prose .pdf .pdf-fnref { margin-left: 1px; font-size: 0.7em; }
 .prose .pdf .pdf-footnotes { margin-top: 1.4rem; padding-top: 0.4rem; border-top: 0; font-size: 0.85rem; }
+.prose .pdf .pdf-biblio { margin-top: 1.2rem; text-align: left; }
+.prose .pdf .pdf-biblio-title { margin-bottom: 0.7rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); font-size: 1.35rem; font-weight: 700; color: var(--bleu); }
+.prose .pdf .pdf-biblio p { text-indent: 0; font-size: 0.9rem; }
 .prose .pdf .pdf-footnotes::before { content: ""; display: block; width: 25%; margin-bottom: 0.4rem; border-top: 1px solid var(--trait); }
 .prose .pdf .pdf-footnotes p { text-indent: 0; }
 .prose .pdf .pdf-footnotes sup { margin-right: 0.3em; font-size: 0.75em; }

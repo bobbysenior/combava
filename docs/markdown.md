@@ -42,15 +42,7 @@ Un lien vers une section : [voir l'introduction](#introduction).
 Un wikilink : [[Introduction]] ou [[Introduction|le début du rapport]].
 ```
 
-Chaque titre reçoit un identifiant calculé comme sur GitHub : en minuscules, sans ponctuation, espaces remplacées par `-`. `## Mise en œuvre` devient `#mise-en-œuvre`. Pour choisir l'identifiant vous-même :
-
-```markdown
-## Résultats détaillés {#resultats}
-
-Voir [les résultats](#resultats).
-```
-
-Un lien vers une section qui n'existe pas est une erreur : vous ne livrerez pas un PDF avec un lien cassé.
+Un lien `#…` vise une section ou un tableau par son label : voir [Labels et renvois](#labels-et-renvois).
 
 ## Images
 
@@ -111,11 +103,12 @@ Le [@tab-etapes] résume la compilation.
 
 Le texte devient « Le Tableau 1 résume la compilation », et le numéro suit si des tableaux sont ajoutés avant.
 
-- L'id ne contient que des lettres, des chiffres, `-`, `_`, `.` et `:`. Il ne doit être utilisé par aucun autre titre ou tableau.
 - Un tableau sans légende peut avoir un label : écrivez seulement `: {#tab-etapes}` sous le tableau. Il est alors numéroté.
-- `[@id]` renvoie au tableau quand l'id est celui d'un tableau du document ; sinon, c'est une [citation](guide.md#bibliographie).
+- Les règles communes à tous les labels (caractères autorisés, doublons) sont dans [Labels et renvois](#labels-et-renvois).
 
-## Citations et encadrés
+## Citations en bloc et encadrés
+
+Pour citer un ouvrage de la bibliographie, voir [Citations bibliographiques](#citations-bibliographiques).
 
 ```markdown {preview=citations}
 > Une citation.
@@ -175,6 +168,60 @@ Une affirmation[^source].
 
 La définition peut se trouver n'importe où dans le document. Appeler deux fois la même note réutilise son numéro.
 
+## Citations bibliographiques
+
+Une fois la bibliographie déclarée dans l'en-tête (`bibliography = "references.bib"`, voir le [guide](guide.md#bibliographie)), on cite une référence par sa clé BibTeX :
+
+```markdown {preview=bibliographie}
+Le livre de référence [@knuth1984].
+Deux sources à la fois [@commonmark; @typst2023].
+```
+
+- `[@cle]` cite une référence, `[@cle1; @cle2]` en cite plusieurs.
+- La bibliographie est ajoutée à la fin du document. Elle ne contient que les références citées.
+- Le template par défaut utilise le style ISO 690 auteur-date : « (Knuth 1984) ».
+- Une clé absente du fichier `.bib` est une erreur, signalée à la ligne de la citation.
+- Une citation sans bibliographie déclarée est aussi une erreur.
+- Seule la forme entre crochets est une citation : `ada@exemple.fr` ou `@knuth1984` seul restent du texte.
+- Si la clé est le label d'un tableau du document, `[@cle]` n'est pas une citation mais un renvoi : voir [Labels et renvois](#labels-et-renvois).
+
+## Labels et renvois
+
+Un label identifie un élément du document, pour y renvoyer depuis le texte. Deux éléments en ont un :
+
+| Élément | Label | Exemple |
+|---|---|---|
+| titre | automatique, ou `{#id}` à la fin du titre | `## Résultats détaillés {#resultats}` |
+| tableau | `{#id}` à la fin de la légende | `: Les étapes de la compilation {#tab-etapes}` |
+
+Le label automatique d'un titre est calculé comme sur GitHub : en minuscules, sans ponctuation, espaces remplacées par `-`. `## Mise en œuvre` reçoit `mise-en-œuvre`. Si deux titres ont le même texte, le second reçoit `-1`, le troisième `-2`, etc. Un tableau n'a pas de label automatique.
+
+Trois façons d'y renvoyer :
+
+| Markdown | Rendu | Cible |
+|---|---|---|
+| `[les résultats](#resultats)` | un lien sur « les résultats » | titre ou tableau |
+| `[[Mise en œuvre]]`, `[[resultats\|les résultats]]` | un lien sur le texte du titre, ou sur le texte donné | titre ou tableau |
+| `[@tab-etapes]` | le numéro : « Tableau 1 » | tableau |
+
+```markdown
+## Résultats détaillés {#resultats}
+
+Le [@tab-etapes] reprend [les résultats](#resultats).
+
+| Étape       | Sortie |
+|-------------|--------|
+| Compilation | PDF    |
+
+: Les étapes de la compilation {#tab-etapes}
+```
+
+Dans un wikilink, `[[cible]]` vise le label `cible` s'il a été posé avec `{#cible}`, sinon le label automatique calculé à partir de `cible` : `[[Mise en œuvre]]` mène au titre `## Mise en œuvre`. Un titre qui a un `{#id}` n'a plus de label automatique : visez-le par son id, `[[resultats]]`.
+
+- **Caractères** : un `{#id}` ne contient que des lettres, des chiffres, `-`, `_`, `.` et `:`. Sinon, il est ignoré avec un avertissement : le titre garde son label automatique, le tableau reste sans label.
+- **Unicité** : un même `{#id}` sur deux titres ou tableaux est une erreur.
+- **Lien cassé** : un lien vers un label qui n'existe pas est une erreur. Vous ne livrerez pas un PDF avec un lien cassé.
+
 ## Mathématiques
 
 Les formules s'écrivent en LaTeX :
@@ -221,3 +268,5 @@ C'est la seule façon d'écrire du Typst : aucune autre syntaxe du document n'en
 - **Le HTML** est ignoré, avec un avertissement. Les commentaires `<!-- … -->` sont ignorés sans avertissement : utilisez-les pour vos notes personnelles.
 - **Exposant et indice** : utilisez les maths, `$x^2$` ou `$x_i$`.
 - **Un document en plusieurs fichiers** : un document est un seul fichier markdown.
+- **Les annexes** : il n'y a pas de syntaxe pour ouvrir une partie « Annexes » numérotée A, B, C… Un titre `#` après la bibliographie n'est pas possible non plus : la bibliographie est toujours ajoutée à la fin.
+- **Un label sur une image ou un bloc de code** : seuls les titres et les tableaux en ont un.
