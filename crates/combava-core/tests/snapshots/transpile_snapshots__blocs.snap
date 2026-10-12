@@ -2,7 +2,7 @@
 source: crates/combava-core/tests/transpile_snapshots.rs
 expression: render(stringify! (blocs))
 ---
-// Généré par combava-core 0.1.1 — ne pas modifier
+// Généré par combava-core 0.1.2 — ne pas modifier
 #import "/__combava__/template/template.typ": template, callout
 #show: template.with(
   title: "Fixture",
