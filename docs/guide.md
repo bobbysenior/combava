@@ -87,6 +87,7 @@ combava init rapport.md
 +++
 title = "Titre du rapport"
 subtitle = "Sous-titre"
+subject = "Matière"
 authors = ["Prénom Nom"]
 teachers = ["Prénom Nom"]
 date = "10 octobre 2026"
