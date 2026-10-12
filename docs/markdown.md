@@ -95,6 +95,25 @@ Terme
 - La légende peut contenir de la mise en forme, du code ou une formule.
 - Pour commencer un paragraphe par `:` sans en faire une légende, écrivez `\:`.
 
+### Faire référence à un tableau
+
+Un `{#id}` à la fin de la légende donne un label au tableau. `[@id]` affiche alors son numéro, et un lien `[texte](#id)` y mène :
+
+```markdown
+Le [@tab-etapes] résume la compilation.
+
+| Étape       | Sortie |
+|-------------|--------|
+| Compilation | PDF    |
+
+: Les étapes de la compilation {#tab-etapes}
+```
+
+Le texte devient « Le Tableau 1 résume la compilation », et le numéro suit si des tableaux sont ajoutés avant.
+
+- L'id ne contient que des lettres, des chiffres, `-`, `_`, `.` et `:`. Il ne doit être utilisé par aucun autre titre ou tableau.
+- Un tableau sans légende peut avoir un label : écrivez seulement `: {#tab-etapes}` sous le tableau. Il est alors numéroté.
+- `[@id]` renvoie au tableau quand l'id est celui d'un tableau du document ; sinon, c'est une [citation](guide.md#bibliographie).
 
 ## Citations et encadrés
 

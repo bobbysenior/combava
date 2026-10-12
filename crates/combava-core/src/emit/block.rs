@@ -65,7 +65,14 @@ impl Emitter<'_, '_, '_> {
                 header,
                 rows,
                 caption,
-            } => self.table(aligns, header, rows, caption.as_deref()),
+                label,
+            } => {
+                let label = label
+                    .as_ref()
+                    .map(|(id, _)| id.as_str())
+                    .filter(|id| self.labels.is_table(id));
+                self.table(aligns, header, rows, caption.as_deref(), label);
+            }
             // Un saut de page est interdit dans un conteneur Typst (citation, callout…).
             BlockKind::Rule if top_level => {
                 self.w.push("#pagebreak()");
@@ -180,6 +187,7 @@ impl Emitter<'_, '_, '_> {
         header: &[Vec<Inline>],
         rows: &[Vec<Vec<Inline>>],
         caption: Option<&[Inline]>,
+        label: Option<&str>,
     ) {
         let columns = aligns.len().max(1);
         let aligns: Vec<_> = (0..columns)
@@ -189,7 +197,9 @@ impl Emitter<'_, '_, '_> {
                 Some(Align::Left) | None => "left",
             })
             .collect();
-        if caption.is_some() {
+        // Le label se pose sur la figure : un tableau référencé en est une, même sans légende.
+        let figure = caption.is_some() || label.is_some();
+        if figure {
             self.w.push("#figure(");
         } else {
             self.w.push("#");
@@ -217,7 +227,11 @@ impl Emitter<'_, '_, '_> {
                 self.caption(caption);
                 self.w.push("])");
             }
+            None if figure => self.w.push("))"),
             None => self.w.push(")"),
+        }
+        if let Some(label) = label {
+            self.w.push(&format!("#label({})", string(label)));
         }
         self.w.end_code();
     }

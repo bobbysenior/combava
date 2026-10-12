@@ -184,6 +184,7 @@ impl Builder<'_, '_, '_> {
                     header,
                     rows,
                     caption: None,
+                    label: None,
                 }
             }
             _ => {
@@ -438,20 +439,59 @@ impl Builder<'_, '_, '_> {
 }
 
 /// Ajoute `block`, sauf s'il est la légende `: …` du tableau qui le précède :
-/// elle est alors rattachée au tableau.
+/// elle est alors rattachée au tableau, avec son éventuel label `{#id}`.
 fn push_block(blocks: &mut Vec<Block>, mut block: Block) {
     if let Some(Block {
-        kind: BlockKind::Table { caption, .. },
+        kind: BlockKind::Table { caption, label, .. },
         ..
     }) = blocks.last_mut()
         && caption.is_none()
+        && label.is_none()
         && let BlockKind::Paragraph(inlines) = &mut block.kind
         && strip_caption_marker(inlines, block.span.start)
     {
-        *caption = Some(std::mem::take(inlines));
+        *label = strip_label(inlines);
+        if !inlines.is_empty() {
+            *caption = Some(std::mem::take(inlines));
+        }
         return;
     }
     blocks.push(block);
+}
+
+/// Retire le `{#id}` qui termine une légende de tableau, et les espaces qui le
+/// précèdent ; renvoie l'id tel qu'écrit et sa position.
+fn strip_label(inlines: &mut Vec<Inline>) -> Option<(String, Range<usize>)> {
+    let Some(Inline {
+        kind: InlineKind::Text(text),
+        span,
+    }) = inlines.last_mut()
+    else {
+        return None;
+    };
+    let open = text.strip_suffix('}')?.rfind("{#")?;
+    let id = &text[open + 2..text.len() - 1];
+    if id.contains(['{', '}']) {
+        return None;
+    }
+    let id = id.to_string();
+    let label_span = span.end.saturating_sub(text.len() - open).max(span.start)..span.end;
+    let kept = text[..open].trim_end().len();
+    span.end -= text.len() - kept;
+    text.truncate(kept);
+    if text.is_empty() {
+        inlines.pop();
+    }
+    while matches!(
+        inlines.last(),
+        Some(Inline {
+            kind: InlineKind::SoftBreak | InlineKind::HardBreak,
+            ..
+        })
+    ) {
+        inlines.pop();
+    }
+    Some((id, label_span))
 }
 
 /// Retire le `:` d'une légende de tableau (`: Légende`) ; `false` si le
@@ -634,6 +674,62 @@ mod tests {
             Some("… en forme@27".into())
         );
         let (document, _) = parse_str(&format!("{table}: Légende\n\nTexte\n"));
+        assert_eq!(document.blocks.len(), 2);
+    }
+
+    fn table_label(markdown: &str) -> (Option<String>, Option<(String, Range<usize>)>) {
+        let (document, _) = parse_str(markdown);
+        let BlockKind::Table { caption, label, .. } = &document.blocks[0].kind else {
+            panic!("tableau attendu");
+        };
+        let caption = caption.as_ref().map(|inlines| {
+            let text = crate::ast::plain_text(inlines);
+            let span = inlines.first().unwrap().span.start..inlines.last().unwrap().span.end;
+            format!("{text}@{span:?}")
+        });
+        (caption, label.clone())
+    }
+
+    #[test]
+    fn label_de_tableau() {
+        let table = "| a |\n|---|\n| 1 |\n\n";
+        assert_eq!(
+            table_label(&format!("{table}: Ma légende {{#tab-a}}\n")),
+            (
+                Some("Ma légende@21..32".into()),
+                Some(("tab-a".into(), 33..41))
+            )
+        );
+        assert_eq!(
+            table_label(&format!("{table}: *Légende*{{#tab-a}}\n")),
+            (
+                Some("Légende@21..31".into()),
+                Some(("tab-a".into(), 31..39))
+            )
+        );
+        assert_eq!(
+            table_label(&format!("{table}: Légende\n{{#tab-a}}\n")),
+            (
+                Some("Légende@21..29".into()),
+                Some(("tab-a".into(), 30..38))
+            )
+        );
+        // Label sans légende.
+        assert_eq!(
+            table_label(&format!("{table}: {{#tab-a}}\n")),
+            (None, Some(("tab-a".into(), 21..29)))
+        );
+        // L'id est gardé tel qu'écrit : sa validité est vérifiée avec les autres labels.
+        assert_eq!(
+            table_label(&format!("{table}: L {{#a b}}\n")).1,
+            Some(("a b".into(), 23..29))
+        );
+        for caption in [": L {#a}b", ": L {a}", ": L {#a}}", ": L `{#a}`"] {
+            let (_, label) = table_label(&format!("{table}{caption}\n"));
+            assert_eq!(label, None, "{caption}");
+        }
+        // Une seule légende par tableau, même réduite à un label.
+        let (document, _) = parse_str(&format!("{table}: {{#a}}\n\n: Deux\n"));
         assert_eq!(document.blocks.len(), 2);
     }
 

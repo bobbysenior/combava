@@ -345,8 +345,8 @@ Code de retour de `combava` : `0` en cas de succès (avertissements compris), `1
 | `template-not-found` | template introuvable ; le message liste les emplacements essayés | vérifier le nom, ou que le dossier contient `template.typ` |
 | `bibliography-not-found` | fichier `.bib` absent ou sans l'extension `.bib` | vérifier le chemin (voir [Chemins](#chemins)) |
 | `citation-without-bibliography` | `[@cle]` sans clé `bibliography` | déclarer la bibliographie |
-| `broken-link` | lien vers une section qui n'existe pas | corriger l'identifiant de la section |
-| `duplicate-label` | deux titres avec le même `{#id}` | changer l'un des deux |
+| `broken-link` | lien vers une section ou un tableau qui n'existe pas | corriger l'identifiant |
+| `duplicate-label` | deux titres ou tableaux avec le même `{#id}` | changer l'un des deux |
 | `remote-image` | image en `https://…` | télécharger l'image à côté du document |
 | `invalid-image-path` | image en chemin absolu ou hors du dossier du document | déplacer l'image dans le dossier du document |
 | `package-download` | téléchargement d'un package Typst impossible | se connecter à internet et relancer |

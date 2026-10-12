@@ -144,6 +144,7 @@ Le détail du comportement et de l'interface entre le core et le CLI est dans [s
             - image distante (`http…`) → erreur : Typst ne télécharge pas
         - tableaux → `#table(columns: …, align: …, table.header(…), …)`
             - avec une légende (paragraphe `: Légende` juste après) → `#figure(table(…), caption: […])`
+            - label `: Légende {#tab-x}` → `#figure(…)#label("tab-x")` ; `[@tab-x]` → `#ref(label("tab-x"))`, « Tableau 1 »
         - notes de bas de page → `#footnote[…]`
             - deux passes : une définition peut apparaître après son appel
         - citations `[@cle]`, `[@a; @b]` → `#cite(<cle>)`

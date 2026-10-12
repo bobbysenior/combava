@@ -64,13 +64,15 @@ Terme
 
 ## Tableau
 
+Le [@tab-etapes] résume les étapes ; un lien comme [celui-ci](#tab-etapes) y mène aussi.
+
 | Étape | Entrée | Sortie |
 |:------|:------:|-------:|
 | Parsing | markdown | arbre |
 | Émission | arbre | Typst |
 | Compilation | Typst | PDF |
 
-: Les étapes de la compilation
+: Les étapes de la compilation {#tab-etapes}
 
 ## Citations et callouts
 

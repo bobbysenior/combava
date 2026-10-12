@@ -75,7 +75,16 @@ Définition 2],
   align: (left, right,),
   table.header([Étape], [Durée],),
   [Tri], [2 s],
-), caption: [Durée des #emph[étapes], en secondes])
+), caption: [Durée des #emph[étapes], en secondes])#label("tab-durees")
+
+Le #ref(label("tab-durees")) donne les durées ; #link(label("tab-durees"))[ce tableau] aussi, comme le #ref(label("tab-seul"));.
+
+#figure(table(
+  columns: 1,
+  align: (left,),
+  table.header([Sans légende],),
+  [x],
+))#label("tab-seul")
 
 #pagebreak()
 
