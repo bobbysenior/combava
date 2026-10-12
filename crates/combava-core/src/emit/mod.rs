@@ -73,7 +73,8 @@ pub(crate) struct Emitter<'a, 'd, 's> {
     /// Clé normalisée → indice de la première définition.
     footnote_index: HashMap<String, usize>,
     footnote_states: Vec<FootnoteState>,
-    /// Typst recopie les titres dans la table des matières : un label y serait en double.
+    /// Typst recopie les titres et les légendes de tableaux dans les tables
+    /// (matières, liste des tableaux) : un label y serait en double.
     in_heading: bool,
     uses_math: bool,
 }

@@ -113,6 +113,26 @@ fn commentaires_html_silencieux() {
 #[test]
 fn invalid_label() {
     assert_reported("texte\n\n## T {#a!b}", &default(), Code::InvalidLabel, 3, 1);
+    assert_reported(
+        "| a |\n|---|\n| 1 |\n\n: Légende {#a!b}\n",
+        &default(),
+        Code::InvalidLabel,
+        5,
+        11,
+    );
+}
+
+#[test]
+fn reference_a_un_tableau_sans_bibliographie() {
+    let markdown = "| a |\n|---|\n| 1 |\n\n: {#tab-a}\n\nVoir le [@tab-a].\n";
+    assert!(diagnostics(markdown, &default()).is_empty());
+    assert_reported(
+        "| a |\n|---|\n| 1 |\n\n: {#tab-a}\n\nVoir [@tab-a; @knuth].\n",
+        &default(),
+        Code::CitationWithoutBibliography,
+        7,
+        6,
+    );
 }
 
 #[test]

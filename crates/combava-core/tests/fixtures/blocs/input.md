@@ -31,6 +31,20 @@ Terme
 | a | b | c | d |
 | e |
 
+| Étape | Durée |
+|-------|------:|
+| Tri   | 2 s   |
+
+: Durée des *étapes*, en secondes {#tab-durees}
+
+Le [@tab-durees] donne les durées ; [ce tableau](#tab-durees) aussi, comme le [@tab-seul].
+
+| Sans légende |
+|--------------|
+| x            |
+
+: {#tab-seul}
+
 ---
 
 Après le saut de page.

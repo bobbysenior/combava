@@ -65,7 +65,8 @@ impl Emitter<'_, '_, '_> {
             if let Some((keys, len)) = citation(&text[at..]) {
                 self.w.push(&markup(&text[plain_start..at]));
                 let written = &text[at..at + len];
-                if !self.config.bibliography {
+                let cites = keys.iter().any(|key| !self.labels.is_table(key));
+                if cites && !self.config.bibliography {
                     let location = self.locate(span, written);
                     self.diags.push(
                         Code::CitationWithoutBibliography,
@@ -74,7 +75,13 @@ impl Emitter<'_, '_, '_> {
                     );
                 }
                 for key in keys {
-                    self.code(&format!("#cite(label({}))", string(key)));
+                    // `[@tab-x]` renvoie à un tableau du document (« Tableau 1 »).
+                    let function = if self.labels.is_table(key) {
+                        "ref"
+                    } else {
+                        "cite"
+                    };
+                    self.code(&format!("#{function}(label({}))", string(key)));
                 }
                 search = at + len;
                 plain_start = search;

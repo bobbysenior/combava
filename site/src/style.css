@@ -325,8 +325,7 @@ pre {
 }
 .prose .pdf > :last-child { margin-bottom: 0; }
 .prose .pdf > :first-child { margin-top: 0; }
-.prose .pdf p { margin: 0 0 0.5rem; }
-.prose .pdf p + p { text-indent: 1.2em; }
+.prose .pdf p { margin: 0 0 0.8rem; }
 .prose .pdf code {
   padding: 0.05em 0.25em;
   background: var(--fond-code);
@@ -337,7 +336,7 @@ pre {
 
 .prose .pdf .pdf-label { display: block; font: 700 0.62rem/1 system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .prose .pdf .pdf-h1 { margin: 0 0 0.8rem; padding-bottom: 0.7rem; border-bottom: 2px solid var(--accent); text-align: left; }
-.prose .pdf .pdf-h1-title { display: block; margin-top: 0.4rem; font-size: 1.9rem; line-height: 1.15; font-weight: 700; color: var(--bleu); }
+.prose .pdf .pdf-h1-title { display: block; margin-top: 0.4rem; font-size: 1.65rem; line-height: 1.15; font-weight: 700; color: var(--bleu); }
 .prose .pdf .pdf-h2 { margin: 0.9rem 0 0.4rem; font-size: 1.2rem; font-weight: 700; color: var(--bleu); text-align: left; }
 .prose .pdf .pdf-h3 { margin: 0.8rem 0 0.3rem; font-size: 1rem; font-weight: 600; text-align: left; }
 .prose .pdf .pdf-num { margin-right: 0.6em; color: var(--accent); }
@@ -386,6 +385,9 @@ pre {
 
 .prose .pdf .pdf-fnref { margin-left: 1px; font-size: 0.7em; }
 .prose .pdf .pdf-footnotes { margin-top: 1.4rem; padding-top: 0.4rem; border-top: 0; font-size: 0.85rem; }
+.prose .pdf .pdf-biblio { margin-top: 1.2rem; text-align: left; }
+.prose .pdf .pdf-biblio-title { margin-bottom: 0.7rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); font-size: 1.35rem; font-weight: 700; color: var(--bleu); }
+.prose .pdf .pdf-biblio p { font-size: 0.9rem; }
 .prose .pdf .pdf-footnotes::before { content: ""; display: block; width: 25%; margin-bottom: 0.4rem; border-top: 1px solid var(--trait); }
 .prose .pdf .pdf-footnotes p { text-indent: 0; }
 .prose .pdf .pdf-footnotes sup { margin-right: 0.3em; font-size: 0.75em; }

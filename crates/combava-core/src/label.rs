@@ -1,4 +1,5 @@
-//! Labels des titres : `{#id}` explicites et slugs automatiques (spécification, section 4.2).
+//! Labels des titres et des tableaux : `{#id}` explicites et slugs automatiques
+//! des titres (spécification, sections 4.2 et 4.5).
 
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
@@ -33,51 +34,78 @@ pub(crate) fn is_valid_id(id: &str) -> bool {
             .all(|c| c.is_alphanumeric() || matches!(c, '-' | '_' | '.' | ':'))
 }
 
-/// Labels de tous les titres du document.
+/// Labels de tous les titres et tableaux du document.
 pub(crate) struct Labels {
     /// Label de chaque titre, indexé par l'octet de début du titre.
     by_heading: HashMap<usize, String>,
+    /// Labels valides des tableaux.
+    tables: HashSet<String>,
     explicit: HashSet<String>,
     all: HashSet<String>,
 }
 
-struct HeadingRef<'a> {
+/// Un élément qui peut porter un label.
+struct Target<'a> {
+    /// Le titre entier, ou le `{#id}` d'un tableau.
     span: Range<usize>,
     id: Option<&'a str>,
-    text: String,
+    kind: TargetKind,
+}
+
+enum TargetKind {
+    /// Texte du titre, pour le slug automatique.
+    Heading(String),
+    /// Un tableau n'a pas de label automatique.
+    Table,
 }
 
 impl Labels {
     pub(crate) fn collect(document: &Document, diags: &mut Diagnostics) -> Self {
-        let mut headings = Vec::new();
-        collect_headings(&document.blocks, &mut headings);
+        let mut targets = Vec::new();
+        collect_targets(&document.blocks, &mut targets);
         for footnote in &document.footnotes {
-            collect_headings(&footnote.blocks, &mut headings);
+            collect_targets(&footnote.blocks, &mut targets);
         }
 
         // Les `{#id}` explicites sont réservés avant le calcul des slugs.
         let mut explicit = HashSet::new();
         let mut by_heading = HashMap::new();
+        let mut tables = HashSet::new();
         let mut pending = Vec::new();
-        for heading in &headings {
-            match heading.id {
-                Some(id) if is_valid_id(id) => {
+        for target in &targets {
+            match (target.id, &target.kind) {
+                (Some(id), kind) if is_valid_id(id) => {
                     if !explicit.insert(id.to_string()) {
                         diags.push(
                             Code::DuplicateLabel,
-                            heading.span.clone(),
-                            format!("label « {id} » déjà utilisé par un autre titre"),
+                            target.span.clone(),
+                            format!("label « {id} » déjà utilisé par un autre titre ou tableau"),
                         );
                     }
-                    by_heading.insert(heading.span.start, id.to_string());
+                    match kind {
+                        TargetKind::Heading(_) => {
+                            by_heading.insert(target.span.start, id.to_string());
+                        }
+                        TargetKind::Table => {
+                            tables.insert(id.to_string());
+                        }
+                    }
                 }
-                invalid => pending.push((heading, invalid)),
+                (invalid, TargetKind::Heading(text)) => pending.push((target, invalid, text)),
+                (id, TargetKind::Table) => diags.push(
+                    Code::InvalidLabel,
+                    target.span.clone(),
+                    format!(
+                        "label « {} » invalide : seuls les lettres, les chiffres, « - », « _ », « . » et « : » sont autorisés ; le tableau n'a pas de label",
+                        id.unwrap_or_default()
+                    ),
+                ),
             }
         }
 
         let mut all = explicit.clone();
-        for (heading, invalid) in pending {
-            let base = slug(&heading.text);
+        for (heading, invalid, text) in pending {
+            let base = slug(text);
             let mut candidate = base.clone();
             let mut n = 0;
             while all.contains(&candidate) {
@@ -99,6 +127,7 @@ impl Labels {
 
         Labels {
             by_heading,
+            tables,
             explicit,
             all,
         }
@@ -107,6 +136,11 @@ impl Labels {
     /// Label du titre qui commence à l'octet `start`.
     pub(crate) fn heading(&self, start: usize) -> Option<&str> {
         self.by_heading.get(&start).map(String::as_str)
+    }
+
+    /// `label` est celui d'un tableau : `[@label]` y renvoie par son numéro.
+    pub(crate) fn is_table(&self, label: &str) -> bool {
+        self.tables.contains(label)
     }
 
     pub(crate) fn contains(&self, label: &str) -> bool {
@@ -123,23 +157,31 @@ impl Labels {
     }
 }
 
-fn collect_headings<'a>(blocks: &'a [Block], out: &mut Vec<HeadingRef<'a>>) {
+fn collect_targets<'a>(blocks: &'a [Block], out: &mut Vec<Target<'a>>) {
     for block in blocks {
         match &block.kind {
-            BlockKind::Heading { id, content, .. } => out.push(HeadingRef {
+            BlockKind::Heading { id, content, .. } => out.push(Target {
                 span: block.span.clone(),
                 id: id.as_deref(),
-                text: plain_text(content),
+                kind: TargetKind::Heading(plain_text(content)),
             }),
-            BlockKind::Quote(_, inner) => collect_headings(inner, out),
+            BlockKind::Table {
+                label: Some((id, span)),
+                ..
+            } => out.push(Target {
+                span: span.clone(),
+                id: Some(id),
+                kind: TargetKind::Table,
+            }),
+            BlockKind::Quote(_, inner) => collect_targets(inner, out),
             BlockKind::List { items, .. } => {
                 for item in items {
-                    collect_headings(&item.blocks, out);
+                    collect_targets(&item.blocks, out);
                 }
             }
             BlockKind::Definitions(definitions) => {
                 for details in definitions.iter().flat_map(|d| &d.details) {
-                    collect_headings(details, out);
+                    collect_targets(details, out);
                 }
             }
             BlockKind::Paragraph(_)
@@ -206,6 +248,44 @@ mod tests {
         let (labels, codes) = labels_of("# Titre {#é!x}\n");
         assert_eq!(labels, ["titre"]);
         assert_eq!(codes, [Code::InvalidLabel]);
+    }
+
+    fn table_labels_of(markdown: &str) -> (Vec<&'static str>, Vec<Code>) {
+        let mut diags = Diagnostics::new(markdown);
+        let document = crate::parser::parse(markdown, &mut diags);
+        let labels = Labels::collect(&document, &mut diags);
+        let found = ["a", "b", "x", "x-1", "a b"]
+            .into_iter()
+            .filter(|id| labels.is_table(id))
+            .collect();
+        let codes = diags.into_sorted().into_iter().map(|d| d.code).collect();
+        (found, codes)
+    }
+
+    #[test]
+    fn labels_de_tableaux() {
+        let table = "| a |\n|---|\n| 1 |\n\n";
+        let (found, codes) = table_labels_of(&format!(
+            "{table}: A {{#a}}\n\n> {}: {{#b}}\n\n{table}: Sans label\n",
+            table.replace('\n', "\n> ").trim_end()
+        ));
+        assert_eq!(found, ["a", "b"]);
+        assert!(codes.is_empty());
+
+        let (found, codes) = table_labels_of(&format!("{table}: L {{#a b}}\n"));
+        assert!(found.is_empty());
+        assert_eq!(codes, [Code::InvalidLabel]);
+    }
+
+    #[test]
+    fn label_de_tableau_reserve_avant_les_slugs() {
+        let table = "| a |\n|---|\n| 1 |\n\n";
+        let markdown = format!("# X\n\n{table}: {{#x}}\n");
+        let (titles, codes) = labels_of(&markdown);
+        assert_eq!(titles, ["x-1"]);
+        assert!(codes.is_empty());
+        let (_, codes) = table_labels_of(&format!("# T {{#x}}\n\n{table}: {{#x}}\n"));
+        assert_eq!(codes, [Code::DuplicateLabel]);
     }
 
     #[test]

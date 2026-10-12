@@ -191,10 +191,10 @@ pub struct TranspileError {
 | `remote-image` | erreur | image dont la destination commence par `http://` ou `https://` |
 | `invalid-image-path` | erreur | image avec un chemin absolu, ou qui sort du dossier du `.md` après normalisation des `..` |
 | `broken-link` | erreur | lien interne ou wikilink vers un label qui n'existe pas |
-| `duplicate-label` | erreur | deux titres avec le même `{#id}` explicite |
-| `citation-without-bibliography` | erreur | citation `[@cle]` alors que `config.bibliography` vaut `false` |
+| `duplicate-label` | erreur | deux titres ou tableaux avec le même `{#id}` explicite |
+| `citation-without-bibliography` | erreur | citation `[@cle]` alors que `config.bibliography` vaut `false` (`cle` n'étant pas le label d'un tableau) |
 | `raw-html` | avertissement | HTML brut, en bloc ou en ligne (les commentaires `<!-- … -->` ne déclenchent rien) |
-| `invalid-label` | avertissement | `{#id}` contenant un caractère interdit ; le slug automatique est utilisé à la place |
+| `invalid-label` | avertissement | `{#id}` contenant un caractère interdit ; le slug automatique est utilisé à la place (un tableau reste sans label) |
 | `invalid-code-attributes` | avertissement | attributs `{…}` d'un bloc de code mal formés ou inconnus ; ils sont ignorés |
 | `undefined-footnote` | avertissement | appel `[^x]` sans définition ; l'appel est affiché comme du texte |
 | `unused-footnote` | avertissement | définition `[^x]: …` jamais appelée |
@@ -271,6 +271,18 @@ pub struct TranspileError {
 - liste de définitions → `#terms(terms.item[terme][définition], …)` ; plusieurs définitions d'un même terme sont séparées par un paragraphe
 - tableau → `#table(columns: n, align: (…), table.header(…), …)`
     - alignement `:--` → `left`, `:-:` → `center`, `--:` → `right`, sans indication → `left`
+    - légende : paragraphe qui suit immédiatement le tableau et commence par `:` suivi d'une espace ou d'une tabulation (`: Légende`, syntaxe de Pandoc)
+        - → `#figure(table(…), caption: […])` ; le paragraphe disparaît du flux
+        - la légende est du markdown en ligne (emphase, code, maths…), sans le `:` ni les espaces qui le suivent
+        - une ligne vide est nécessaire entre le tableau et la légende : sinon GFM lit la ligne comme une ligne du tableau
+        - `\:` en début de paragraphe n'est pas une légende ; un tableau n'a qu'une légende
+        - les notes de bas de page de la légende sont émises sans label, comme dans un titre (section 4.7)
+    - label : `{#id}` à la fin de la légende (`: Légende {#tab-x}`), retiré du texte avec les espaces qui le précèdent
+        - → `#figure(table(…), caption: […])#label("tab-x")`
+        - légende réduite au label (`: {#tab-x}`) → `#figure(table(…))#label("tab-x")`, sans `caption`
+        - mêmes caractères autorisés que pour un titre (section 4.2) ; sinon avertissement `invalid-label`, et le tableau n'a pas de label
+        - réservé avec les `{#id}` des titres, avant le calcul des slugs ; un id déjà pris par un titre ou un tableau → erreur `duplicate-label`
+        - cible possible des liens internes, des wikilinks (section 4.3) et des références `[@tab-x]` (section 4.8)
 - ligne horizontale (`---`, `***`, `___`, `- - -`…) → `#pagebreak()`
     - dans un conteneur (citation, callout, liste, note) → `#line(length: 100%)` : Typst y interdit les sauts de page
 
@@ -302,6 +314,8 @@ pub struct TranspileError {
 - syntaxe : `[@cle]` ou `[@a; @b]`, la clé ne contenant que lettres, chiffres, `_`, `-`, `.`, `:`
     - repérée dans le texte après fusion des événements `Text` consécutifs (pulldown-cmark peut découper `[`, `@cle` et `]`)
 - → `#cite(label("cle"))`, une fois par clé ; Typst regroupe les citations adjacentes
+- clé égale au label d'un tableau (section 4.5) → `#ref(label("cle"))`, qui affiche « Tableau n »
+    - pas d'erreur `citation-without-bibliography` si toutes les clés sont des labels de tableaux
 - un `@` hors de cette syntaxe (une adresse mail par exemple) est du texte échappé
 
 ### 4.9 Maths
@@ -355,6 +369,7 @@ pub struct TranspileError {
 +++
 title = "Titre du rapport"
 subtitle = "Sous-titre"
+subject = "Matière"
 authors = ["Prénom Nom"]
 teachers = ["Prénom Nom"]
 date = "10 octobre 2026"

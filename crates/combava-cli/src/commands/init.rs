@@ -29,6 +29,7 @@ pub fn content(today: NaiveDate, template: Option<&str>) -> String {
         "+++\n\
          title = \"Titre du rapport\"\n\
          subtitle = \"Sous-titre\"\n\
+         subject = \"Matière\"\n\
          authors = [\"Prénom Nom\"]\n\
          teachers = [\"Prénom Nom\"]\n",
     );
@@ -108,6 +109,7 @@ mod tests {
             r#"+++
 title = "Titre du rapport"
 subtitle = "Sous-titre"
+subject = "Matière"
 authors = ["Prénom Nom"]
 teachers = ["Prénom Nom"]
 date = "10 octobre 2026"

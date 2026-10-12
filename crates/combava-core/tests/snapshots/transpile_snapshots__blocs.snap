@@ -2,7 +2,7 @@
 source: crates/combava-core/tests/transpile_snapshots.rs
 expression: render(stringify! (blocs))
 ---
-// Généré par combava-core 0.1.0 — ne pas modifier
+// Généré par combava-core 0.1.2 — ne pas modifier
 #import "/__combava__/template/template.typ": template, callout
 #show: template.with(
   title: "Fixture",
@@ -69,6 +69,22 @@ Définition 2],
   [a], [b], [c], [d],
   [e], [], [], [],
 )
+
+#figure(table(
+  columns: 2,
+  align: (left, right,),
+  table.header([Étape], [Durée],),
+  [Tri], [2 s],
+), caption: [Durée des #emph[étapes], en secondes])#label("tab-durees")
+
+Le #ref(label("tab-durees")) donne les durées ; #link(label("tab-durees"))[ce tableau] aussi, comme le #ref(label("tab-seul"));.
+
+#figure(table(
+  columns: 1,
+  align: (left,),
+  table.header([Sans légende],),
+  [x],
+))#label("tab-seul")
 
 #pagebreak()
 

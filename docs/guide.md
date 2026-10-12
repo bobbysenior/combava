@@ -87,6 +87,7 @@ combava init rapport.md
 +++
 title = "Titre du rapport"
 subtitle = "Sous-titre"
+subject = "Matière"
 authors = ["Prénom Nom"]
 teachers = ["Prénom Nom"]
 date = "10 octobre 2026"
@@ -228,7 +229,7 @@ Un chemin relatif est résolu par rapport à l'endroit où il est écrit :
 
 ## Écrire en markdown
 
-Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés, blocs de code, notes de bas de page, formules. Chaque élément, avec un exemple et son rendu, est décrit dans la [référence markdown](markdown.md).
+Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés, blocs de code, notes de bas de page, formules. Il y ajoute les légendes de tableaux, les citations bibliographiques `[@cle]` et les labels `{#id}`, pour renvoyer à un titre ou à un tableau depuis le texte. Chaque élément, avec un exemple et son rendu, est décrit dans la [référence markdown](markdown.md).
 
 ## Bibliographie
 
@@ -255,9 +256,14 @@ Combava suit le markdown de GitHub : titres, listes, tableaux, images, encadrés
     Le livre de référence [@knuth1984].
     ```
 
-La bibliographie est ajoutée à la fin du document. Le template par défaut utilise le style ISO 690 auteur-date.
+La bibliographie est ajoutée à la fin du document, après le dernier chapitre. Elle ne contient que les références citées. Le template par défaut utilise le style ISO 690 auteur-date : « (Knuth 1984) ».
 
-Une citation sans bibliographie déclarée est une erreur. Une adresse comme `ada@exemple.fr` n'est pas une citation : seule la forme `[@cle]` en est une.
+Deux erreurs arrêtent la compilation :
+
+- une citation alors qu'aucune bibliographie n'est déclarée (`citation-without-bibliography`) ;
+- une clé absente du fichier `.bib` (erreur `typst`, signalée à la ligne de la citation).
+
+Une adresse comme `ada@exemple.fr` n'est pas une citation : seule la forme `[@cle]` en est une. Si `cle` est le label d'un tableau du document, `[@cle]` affiche son numéro (« Tableau 1 ») au lieu de citer une référence : voir [Labels et renvois](markdown.md#labels-et-renvois).
 
 ## Templates
 
@@ -344,8 +350,8 @@ Code de retour de `combava` : `0` en cas de succès (avertissements compris), `1
 | `template-not-found` | template introuvable ; le message liste les emplacements essayés | vérifier le nom, ou que le dossier contient `template.typ` |
 | `bibliography-not-found` | fichier `.bib` absent ou sans l'extension `.bib` | vérifier le chemin (voir [Chemins](#chemins)) |
 | `citation-without-bibliography` | `[@cle]` sans clé `bibliography` | déclarer la bibliographie |
-| `broken-link` | lien vers une section qui n'existe pas | corriger l'identifiant de la section |
-| `duplicate-label` | deux titres avec le même `{#id}` | changer l'un des deux |
+| `broken-link` | lien vers une section ou un tableau qui n'existe pas | corriger l'identifiant |
+| `duplicate-label` | deux titres ou tableaux avec le même `{#id}` | changer l'un des deux |
 | `remote-image` | image en `https://…` | télécharger l'image à côté du document |
 | `invalid-image-path` | image en chemin absolu ou hors du dossier du document | déplacer l'image dans le dossier du document |
 | `package-download` | téléchargement d'un package Typst impossible | se connecter à internet et relancer |
