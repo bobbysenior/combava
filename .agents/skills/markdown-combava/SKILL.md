@@ -7,7 +7,19 @@ description: Rédaction de documents markdown conformes à la syntaxe de combava
 
 Combava transforme **un seul fichier markdown** en PDF (via Typst). Il suit le markdown de GitHub, plus quelques extensions. Ce qu'il ne comprend pas est ignoré ou refusé : mieux vaut s'en tenir à la syntaxe ci-dessous.
 
-Sources de référence, à relire en cas de doute : `docs/markdown.md` (syntaxe), `docs/guide.md` (en-tête, configuration, erreurs), `docs/specification.md` section 4 (règles exactes), `examples/report.md` (document qui utilise tout, sans avertissement).
+## Références fournies avec ce skill
+
+Toute la documentation utile est **dans le dossier de ce skill** (chemins relatifs à ce `SKILL.md`). Ne jamais chercher la documentation de combava ailleurs sur le disque (`find /`, `find ~`, `grep -r` à la racine) : tout est ici. Ce fichier-ci suffit pour un document simple ; ouvrir la référence voulue en cas de doute.
+
+| Fichier | Ouvrir pour… |
+|---|---|
+| `references/syntaxe.md` | la règle exacte d'un élément markdown : texte, titres, liens, images, listes, tableaux, labels, encadrés, code, notes, citations, maths, saut de page, ce qui n'existe pas |
+| `references/configuration.md` | les clés de l'en-tête, leurs types et pièges, les couches `.combava/config.toml` et globale, la résolution des chemins |
+| `references/commandes.md` | `combava build` et `combava init`, leurs options, les codes de sortie, l'installation |
+| `references/diagnostics.md` | un message d'erreur ou d'avertissement : chaque code, les erreurs Typst, les problèmes sans message |
+| `references/typst.md` | ce que le markdown ne sait pas faire : blocs ` ```{=typst} `, recettes (image à taille fixe, renvoi vers une figure, chapitre non numéroté, annexes A/B/C, cellules fusionnées), lecture de `--transpile-only` |
+| `references/templates.md` | le rendu du template par défaut (couverture, pages, styles), la recherche et la création de templates |
+| `exemples/rapport-complet.md` | un document qui utilise toutes les fonctionnalités et compile sans avertissement, avec `exemples/references.bib` et `exemples/images/` |
 
 ## Structure d'un document
 
@@ -215,7 +227,7 @@ Une ligne `---` **précédée d'une ligne vide** produit un saut de page. Sans l
 ```
 ````
 
-Recopié tel quel dans le code Typst. À réserver à ce que le markdown ne sait pas faire, par exemple une image à taille fixe :
+Recopié tel quel dans le code Typst. À réserver à ce que le markdown ne sait pas faire (recettes dans `references/typst.md`), par exemple une image à taille fixe :
 
 ````markdown
 ```{=typst}
@@ -230,14 +242,14 @@ Dans un bloc Typst, un chemin commençant par `/` est relatif au dossier du fich
 - **HTML** (`<div>`, `<br>`, `<sup>`…) : ignoré avec l'avertissement `raw-html`. Les commentaires `<!-- … -->` sont ignorés sans avertissement : bons pour des notes personnelles.
 - **Exposant / indice** : passer par les maths.
 - **Plusieurs fichiers** : pas d'inclusion, un document = un fichier.
-- **Annexes** numérotées A, B, C… : aucune syntaxe. Un titre `#` après la bibliographie est impossible, elle est toujours en dernier.
+- **Annexes** numérotées A, B, C… : aucune syntaxe markdown (contournement en Typst : `references/typst.md`). Un titre `#` après la bibliographie est impossible, elle est toujours en dernier.
 - **Label sur une image ou un bloc de code** : seuls titres et tableaux en ont un.
 - **Markdown dans l'en-tête** : les valeurs TOML sont du texte brut.
 
 ## Méthode de travail
 
 1. Lire le fichier existant, son en-tête et les fichiers `.combava/config.toml` voisins avant d'écrire.
-2. Écrire en respectant la syntaxe ci-dessus ; en cas de doute sur un élément, ouvrir `examples/report.md`.
+2. Écrire en respectant la syntaxe ci-dessus ; en cas de doute sur un élément, ouvrir `references/syntaxe.md` ou l'exemple `exemples/rapport-complet.md` de ce skill.
 3. **Vérifier en compilant** : un document doit se compiler sans erreur et, idéalement, sans avertissement.
 
    ```bash
@@ -247,7 +259,7 @@ Dans un bloc Typst, un chemin commençant par `/` est relatif au dossier du fich
    - Avec `--transpile-only`, combava écrit le code Typst généré (`rapport.typ`) au lieu du PDF : utile pour comprendre une erreur de ligne « du code généré ».
    - Sans binaire installé : `cargo run -p combava-cli -- build rapport.md` depuis le dépôt combava.
    - Les diagnostics ont la forme `rapport.md:12:5: avertissement[raw-html] : HTML brut ignoré` (fichier, ligne, colonne, gravité, code, message). Toutes les erreurs sont rapportées en une fois. Une erreur ne produit aucun PDF et laisse l'ancien intact ; un avertissement n'empêche pas le PDF.
-4. Corriger selon le code du diagnostic (liste complète dans `docs/guide.md`, section « Codes »).
+4. Corriger selon le code du diagnostic (liste complète, erreurs Typst comprises, dans `references/diagnostics.md`).
 
 | Code | Correction |
 |---|---|
